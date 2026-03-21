@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>予約 — kommons</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+
+:root{--bg:#f7f6f3;--card:#fff;--text:#1a1a1a;--text2:#888;--border:#e8e6e1;--primary:#1a1a1a;--primary-text:#fff;--accent:#b8956a;--success:#2d6a4f;--success-bg:#f0f7f2;--error:#c62828;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom)}
+.container{max-width:480px;margin:0 auto;padding:0 20px 40px;min-height:100vh}
+.header{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--border);margin-bottom:10px}
+.logo{font-size:22px;font-weight:700;letter-spacing:2px}
+.lang-btn{font-size:13px;padding:4px 14px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.progress-wrap{padding:12px 0 4px}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width 0.3s ease;border-radius:2px}
+.step-label{display:none}
+.step-indicators{display:flex;justify-content:space-between;margin-top:8px;margin-bottom:12px}
+.step-dot{font-size:10px;color:var(--text2);opacity:0.4;text-align:center;flex:1;transition:opacity 0.2s}
+.step-dot.active{opacity:1;color:var(--accent);font-weight:600}
+.step-dot.done{opacity:0.7;color:var(--text)}
+.step{display:none;animation:fadeIn 0.25s ease}
+.step.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.step-title{font-size:20px;font-weight:600;margin-bottom:18px}
+.btn-back{display:inline-flex;align-items:center;font-size:15px;color:var(--text2);background:none;border:none;padding:6px 0;margin-bottom:12px;cursor:pointer;font-family:inherit}
+.cat-grid{display:flex;flex-direction:column;gap:10px}
+.acc-section{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--card)}
+.acc-header{display:flex;align-items:center;justify-content:space-between;padding:18px;cursor:pointer;transition:all 0.15s ease;-webkit-tap-highlight-color:transparent}
+.acc-header:active{background:#f5f3ee}
+.acc-header.selected{background:#faf7f3}
+.acc-header.open{border-bottom:1px solid var(--border)}
+.acc-left{display:flex;align-items:center;gap:12px}
+.acc-right{display:flex;align-items:center;gap:8px}
+.acc-arrow{font-size:18px;color:var(--text2);transition:transform 0.2s}
+.cat-icon{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--accent);width:52px;display:inline-block;background:#f5f0ea;padding:3px 0;border-radius:4px;text-align:center;flex-shrink:0}
+.cat-name{font-size:16px;font-weight:600}
+.acc-body{padding:4px 8px 8px;animation:slideDown 0.2s ease}
+@keyframes slideDown{from{opacity:0;max-height:0;transform:translateY(-8px)}to{opacity:1;max-height:2000px;transform:translateY(0)}}
+.acc-note{font-size:11px;color:var(--text2);padding:6px 8px;margin-bottom:4px;font-style:italic}
+.menu-desc{font-size:12px;color:var(--text2);margin-top:1px}
+.mood-cta{display:block;text-align:center;padding:12px;margin-top:8px;border:1px dashed transparent;border-radius:12px;color:var(--text2);font-size:13px;text-decoration:none;transition:all 0.2s}
+.mood-cta:hover{border-color:var(--border);color:var(--accent);background:#faf7f3}
+@media(hover:none){.mood-cta{color:var(--accent);opacity:0.7}.mood-cta:active{opacity:1;background:#faf7f3}}
+.addon-item{background:#faf8f5;border:1px dashed var(--border);border-radius:10px;padding:14px 16px;margin:0 8px 10px 24px;cursor:pointer;transition:all 0.15s ease;display:flex;justify-content:space-between;align-items:center}
+.addon-item:active{transform:scale(0.98);border-color:var(--accent)}
+.addon-item.selected{border-color:var(--accent);border-style:solid;background:#f5f0ea;border-left:3px solid var(--accent)}
+.shampoo-note{font-size:12px;color:var(--accent);margin-top:2px}
+.menu-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all 0.15s ease;display:flex;justify-content:space-between;align-items:center}
+.menu-item:active{transform:scale(0.98);border-color:var(--accent)}
+.menu-name{font-size:16px;font-weight:500}
+.menu-detail{font-size:14px;color:var(--text2);margin-top:3px}
+.menu-price{font-size:17px;font-weight:600;white-space:nowrap;margin-left:12px}
+.menu-price.faded{font-size:13px;font-weight:400;color:var(--text2);opacity:0.7}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-month{font-size:16px;font-weight:600}
+.cal-arrow{width:40px;height:40px;border:1px solid var(--border);border-radius:50%;background:var(--card);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.cal-arrow:disabled{opacity:0.3;cursor:default}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-hdr{font-size:12px;color:var(--text2);padding:8px 0;font-weight:500}
+.cal-hdr.sun{color:#c62828}
+.cal-hdr.sat{color:#1565c0}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-size:14px}
+.cal-cell.available{cursor:pointer;font-weight:600;background:#faf7f3;border-radius:10px}
+.cal-cell.available:hover{background:#f0ede8}
+.cal-cell.available:active{background:var(--accent);color:#fff}
+.cal-cell.disabled{color:#d5d3ce}
+.cal-cell.today .cal-day{background:var(--accent);color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.selected-info{font-size:14px;color:var(--text2);margin-bottom:16px;padding:12px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.time-btn{padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--card);font-size:16px;cursor:pointer;text-align:center;transition:all 0.15s ease;font-family:inherit}
+.time-btn:active{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
+.time-btn.flash{background:var(--accent);color:#fff;border-color:var(--accent);transition:all 0.15s ease}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:14px;font-weight:500;margin-bottom:6px}
+.form-label .req{color:var(--error);margin-left:2px}
+.form-input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:16px;font-family:inherit;background:var(--card);-webkit-appearance:none}
+.form-input:focus{outline:none;border-color:var(--accent)}
+textarea.form-input{resize:vertical;min-height:60px}
+.form-error{font-size:12px;color:var(--error);margin-top:4px;display:none}
+.form-error.show{display:block}
+.btn-primary{width:100%;padding:18px;border:none;border-radius:14px;background:var(--primary);color:var(--primary-text);font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;margin-top:10px}
+.btn-primary:active{background:#333}
+.btn-primary:disabled{background:#ccc;cursor:default}
+.confirm-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.confirm-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f0ede8;font-size:15px}
+.confirm-row:last-child{border-bottom:none}
+.confirm-label{color:var(--text2)}
+.confirm-value{font-weight:500;text-align:right;max-width:60%}
+.done-wrap{text-align:center;padding-top:32px}
+.done-check{width:64px;height:64px;border-radius:50%;background:var(--success-bg);color:var(--success);font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.done-msg{font-size:14px;color:var(--text2);margin-top:8px;margin-bottom:24px}
+.done-map{display:block;text-align:center;margin-top:16px;color:var(--accent);font-size:14px}
+.loading{display:none;position:fixed;inset:0;background:rgba(247,246,243,0.85);z-index:100;align-items:center;justify-content:center}
+.loading.show{display:flex}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 16px;color:var(--text2)}
+.empty-state p{margin-bottom:8px}
+.error-msg{text-align:center;padding:32px 16px;color:var(--text2)}
+.retry-btn{margin-top:16px;padding:10px 24px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-family:inherit;font-size:14px}
+.cat-check{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.cat-sub{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.menu-item.selected{border-color:var(--accent);background:#faf7f3;border-left:3px solid var(--accent)}
+.menu-check{color:var(--accent);font-weight:700;font-size:18px;min-width:24px;text-align:center}
+.selection-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,0.06);padding:12px 16px;display:none;align-items:center;gap:12px;z-index:50}
+.selection-bar.show{display:flex}
+.selection-bar-inner{max-width:480px;margin:0 auto;width:100%;display:flex;align-items:center;gap:12px}
+.sel-info{flex:1;font-size:13px;color:var(--text2);line-height:1.3}
+.sel-info strong{color:var(--text);display:block;font-size:14px}
+.sel-next{padding:12px 24px;border:none;border-radius:10px;background:var(--primary);color:var(--primary-text);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+.sel-next:active{background:#333}
+.container.has-bar{padding-bottom:100px}
+.lang-select-btn{width:200px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--card);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s ease}
+.lang-select-btn:active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-line-close{width:100%;padding:14px;border:none;border-radius:12px;background:#06C755;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:12px}
+.btn-line-close:active{background:#05a648}
+
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="logo">kommons</div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+  </header>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="step-label" id="stepLabel"></div>
+    <div class="step-indicators" id="stepIndicators"></div>
+  </div>
+  <section id="step-lang" class="step">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:24px;text-align:center">
+      <div style="font-size:24px;font-weight:700;letter-spacing:3px;margin-bottom:8px">kommons</div>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:16px">Please select your language<br>言語を選んでください</p>
+      <button class="lang-select-btn" onclick="chooseLang('ja')">日本語</button>
+      <button class="lang-select-btn" onclick="chooseLang('en')">English</button>
+    </div>
+  </section>
+  <section id="step-category" class="step">
+    <h2 class="step-title" id="catTitle"></h2>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+  <section id="step-date" class="step">
+    <button class="btn-back" id="dateBack" onclick="goBack()">&larr;</button>
+    <h2 class="step-title" id="dateTitle"></h2>
+    <div id="calendar"></div>
+  </section>
+  <section id="step-time" class="step">
+    <button class="btn-back" onclick="goBack()">&larr;</button>
+    <h2 class="step-title" id="timeTitle"></h2>
+    <div class="selected-info" id="selectedDateInfo"></div>
+    <div id="timeGrid"></div>
+  </section>
+  <section id="step-info" class="step">
+    <button class="btn-back" onclick="goBack()">&larr;</button>
+    <h2 class="step-title" id="infoTitle"></h2>
+    <div id="infoMoodSummary"></div>
+    <form id="infoForm" onsubmit="submitInfo(event)">
+      <div class="form-group">
+        <label class="form-label"><span id="nameLabel"></span><span class="req">*</span></label>
+        <input class="form-input" type="text" id="nameInput" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span id="phoneLabel"></span><span class="req">*</span></label>
+        <input class="form-input" type="tel" id="phoneInput" required autocomplete="tel">
+        <div class="form-error" id="phoneError"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span id="emailLabel"></span><span class="req">*</span></label>
+        <input class="form-input" type="email" id="emailInput" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="notesLabel"></label>
+        <textarea class="form-input" id="notesInput" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn-primary" id="infoBtn"></button>
+    </form>
+  </section>
+  <section id="step-confirm" class="step">
+    <button class="btn-back" onclick="goBack()">&larr;</button>
+    <h2 class="step-title" id="confirmTitle"></h2>
+    <div class="confirm-card" id="confirmCard"></div>
+    <div id="confirmMoodSummary"></div>
+    <button class="btn-primary" id="bookBtn" onclick="submitBooking()"></button>
+  </section>
+  <section id="step-done" class="step">
+    <div class="done-wrap">
+      <div class="done-check">&#10003;</div>
+      <h2 class="step-title" id="doneTitle"></h2>
+      <p class="done-msg" id="doneMsg"></p>
+      <div class="confirm-card" id="doneCard"></div>
+      <a class="done-map" href="https://maps.app.goo.gl/XJqp4YFyVdCUhDN89" target="_blank" id="mapLink"></a>
+    </div>
+  </section>
+</div>
+<div class="loading" id="loading"><div class="spinner"></div></div>
+<div class="selection-bar" id="selectionBar">
+  <div class="selection-bar-inner">
+    <div class="sel-info" id="selInfo"></div>
+    <button class="sel-next" id="selNextBtn" onclick="proceedWithSelection()"></button>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════════════
+// Config
+// ═══════════════════════════════════════════
+var GAS_API = 'https://script.google.com/macros/s/AKfycbyJkyjUM2x9Eiv0AwvtUMi0Syx34jrppeglnXAOVVeVNxGDwDaHhqar255O4rpEqPCj1Q/exec';
+var LIFF_ID = '2009555220-HXbJBLAX';
+var API_MAP = {handleMenus:'menus',handleSlots:'slots',handleDays:'days',handleBook:'book'};
+
+// ═══════════════════════════════════════════
+// URL params
+// ═══════════════════════════════════════════
+var urlParams = new URLSearchParams(window.location.search);
+var LANG = urlParams.get('lang') || '';
+if (LANG === 'jp') LANG = 'ja';
+var INITIAL_MENU_ID = (urlParams.get('menuId') || '').replace(/[^a-zA-Z0-9_]/g, '');
+var LANG_FROM_URL = !!urlParams.get('lang');
+var lineUserId = '';
+var lineDisplayName = '';
+var liffReady = false;
+
+// Mood Curator params
+var MOOD_CURATOR = {};
+['mood','cut','cutLength','perm','color','nuance','technique','texture','damage','spa','signatureCode'].forEach(function(k) {
+  var v = urlParams.get(k);
+  if (v) MOOD_CURATOR[k] = v;
+});
+
+// ═══════════════════════════════════════════
+// API (fetch instead of google.script.run)
+// ═══════════════════════════════════════════
+function api(fn, params) {
+  var action = API_MAP[fn] || fn;
+  var qs = new URLSearchParams({ action: action });
+  if (params) {
+    Object.keys(params).forEach(function(k) {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
+        qs.set(k, params[k]);
+      }
+    });
+  }
+  return fetch(GAS_API + '?' + qs.toString())
+    .then(function(r) { return r.json(); });
+}
+
+// ═══════════════════════════════════════════
+// LIFF
+// ═══════════════════════════════════════════
+function initLiff() {
+  if (!LIFF_ID) return Promise.resolve();
+  return liff.init({ liffId: LIFF_ID }).then(function() {
+    liffReady = true;
+    if (liff.isLoggedIn()) {
+      return liff.getProfile().then(function(p) {
+        lineUserId = p.userId;
+        lineDisplayName = p.displayName;
+      });
+    }
+  }).catch(function(e) { console.log('LIFF error:', e); });
+}
+
+// ═══════════════════════════════════════════
+// Core booking form logic
+// ═══════════════════════════════════════════
+var state = {step:'',category:'',openCategory:'',selections:{},addons:{},isCombo:false,menuId:'',menuIds:[],totalDuration:0,totalPrice:0,date:'',time:'',timeEnd:'',name:'',phone:'',email:'',notes:''};
+var allMenus = {};
+var calYear, calMonth;
+var monthCache = {};
+var CATS = [
+  {id:'cut',icon:'Cut',en:'Cut',ja:'\\u30AB\\u30C3\\u30C8'},
+  {id:'color',icon:'Color',en:'Color',ja:'\\u30AB\\u30E9\\u30FC'},
+  {id:'perm',icon:'Perm',en:'Perm',ja:'\\u30D1\\u30FC\\u30DE'},
+  {id:'treatment',icon:'Care',en:'Treatment',ja:'\\u30C8\\u30EA\\u30FC\\u30C8\\u30E1\\u30F3\\u30C8'},
+  {id:'headspa',icon:'Spa',en:'Head Spa',ja:'\\u30D8\\u30C3\\u30C9\\u30B9\\u30D1'},
+  {id:'shampoo',icon:'S&B',en:'Shampoo Blow',ja:'',langOnly:'en'},
+  {id:'combo',icon:'Set',en:'Combo Menus',ja:'\\u7D44\\u307F\\u5408\\u308F\\u305B\\u30E1\\u30CB\\u30E5\\u30FC'}
+];
+var T = {
+  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7\\u201315 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'\\u00A5',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',mapText:'\\uD83D\\uDCCD View on Google Maps',address:'2F, 3-2-14 Koenjiminami, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
+  ja:{selectCategory:'\\u30E1\\u30CB\\u30E5\\u30FC\\u3092\\u9078\\u3093\\u3067\\u304F\\u3060\\u3055\\u3044',selectMenu:'\\u30E1\\u30CB\\u30E5\\u30FC\\u3092\\u9078\\u3093\\u3067\\u304F\\u3060\\u3055\\u3044',selectCombo:'\\u7D44\\u307F\\u5408\\u308F\\u305B\\u30E1\\u30CB\\u30E5\\u30FC',selectDate:'\\u65E5\\u4ED8\\u3092\\u9078\\u3093\\u3067\\u304F\\u3060\\u3055\\u3044',selectTime:'\\u6642\\u9593\\u3092\\u9078\\u3093\\u3067\\u304F\\u3060\\u3055\\u3044',yourInfo:'\\u304A\\u5BA2\\u69D8\\u60C5\\u5831',confirmBooking:'\\u4E88\\u7D04\\u5185\\u5BB9\\u306E\\u78BA\\u8A8D',booked:'\\u3054\\u4E88\\u7D04\\u304C\\u78BA\\u5B9A\\u3057\\u307E\\u3057\\u305F',bookedMsg:'\\u3054\\u6765\\u5E97\\u3092\\u304A\\u5F85\\u3061\\u3057\\u3066\\u304A\\u308A\\u307E\\u3059\\uFF01',name:'\\u304A\\u540D\\u524D',phone:'\\u96FB\\u8A71\\u756A\\u53F7',email:'\\u30E1\\u30FC\\u30EB',notes:'\\u5099\\u8003\\uFF08\\u4EFB\\u610F\\uFF09',namePh:'\\u30D5\\u30EB\\u30CD\\u30FC\\u30E0',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'\\u3054\\u8981\\u671B\\u304C\\u3042\\u308C\\u3070...',phoneErr:'\\u6709\\u52B9\\u306A\\u96FB\\u8A71\\u756A\\u53F7\\u3092\\u5165\\u529B\\u3057\\u3066\\u304F\\u3060\\u3055\\u3044\\uFF087\\u301C15\\u6841\\uFF09',next:'\\u6B21\\u3078',bookNow:'\\u4E88\\u7D04\\u3059\\u308B',menu:'\\u30E1\\u30CB\\u30E5\\u30FC',dateTime:'\\u65E5\\u6642',duration:'\\u6240\\u8981\\u6642\\u9593',price:'\\u6599\\u91D1',min:'\\u5206',yen:'\\u00A5',noSlots:'\\u3053\\u306E\\u65E5\\u306F\\u7A7A\\u304D\\u304C\\u3042\\u308A\\u307E\\u305B\\u3093',tryAnother:'\\u5225\\u306E\\u65E5\\u3092\\u304A\\u9078\\u3073\\u304F\\u3060\\u3055\\u3044',error:'\\u30A8\\u30E9\\u30FC\\u304C\\u767A\\u751F\\u3057\\u307E\\u3057\\u305F\\u3002\\u3082\\u3046\\u4E00\\u5EA6\\u304A\\u8A66\\u3057\\u304F\\u3060\\u3055\\u3044\\u3002',mapText:'\\uD83D\\uDCCD Google Maps\\u3067\\u898B\\u308B',address:'\\u6771\\u4EAC\\u90FD\\u6749\\u4E26\\u533A\\u9AD8\\u5186\\u5BFA\\u53573-2-14 2F',sun:'\\u65E5',mon:'\\u6708',tue:'\\u706B',wed:'\\u6C34',thu:'\\u6728',fri:'\\u91D1',sat:'\\u571F',stepMenu:'\\u30E1\\u30CB\\u30E5\\u30FC',stepDate:'\\u65E5\\u4ED8',stepTime:'\\u6642\\u9593',stepInfo:'\\u60C5\\u5831',stepConfirm:'\\u78BA\\u8A8D'}
+};
+function t(k){return T[LANG][k]||k}
+
+function showLoading(){document.getElementById('loading').classList.add('show')}
+function hideLoading(){document.getElementById('loading').classList.remove('show')}
+function escHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function cRow(l,v){return '<div class="confirm-row"><span class="confirm-label">'+escHtml(l)+'</span><span class="confirm-value">'+escHtml(v)+'</span></div>'}
+
+var STEP_PCT={lang:0,category:0,date:25,time:50,info:75,confirm:90,done:100};
+var STEP_LBL={lang:'',category:'stepMenu',date:'stepDate',time:'stepTime',info:'stepInfo',confirm:'stepConfirm',done:''};
+function goTo(step){
+  var secs=document.querySelectorAll('.step');for(var i=0;i<secs.length;i++)secs[i].classList.remove('active');
+  state.step=step;document.getElementById('step-'+step).classList.add('active');
+  var isLangStep=step==='lang';
+  document.querySelector('.header').style.display=isLangStep?'none':'';
+  document.querySelector('.progress-wrap').style.display=isLangStep?'none':'';
+  document.getElementById('progressFill').style.width=(STEP_PCT[step]||0)+'%';
+  var lk=STEP_LBL[step];document.getElementById('stepLabel').textContent=lk?t(lk):'';
+  var stepsArr=['category','date','time','info','confirm'];var lblArr=['stepMenu','stepDate','stepTime','stepInfo','stepConfirm'];var curIdx=stepsArr.indexOf(step);
+  var indEl=document.getElementById('stepIndicators');
+  if(step==='done'||isLangStep){indEl.style.display='none'}else{indEl.style.display='flex';var ih='';for(var si=0;si<stepsArr.length;si++){var cls='step-dot';if(si===curIdx)cls+=' active';else if(si<curIdx)cls+=' done';ih+='<div class="'+cls+'">'+t(lblArr[si])+'</div>'}indEl.innerHTML=ih}
+  updateSelectionBar();window.scrollTo(0,0);
+}
+function goBack(){
+  switch(state.step){
+    case 'date':renderCategories();goTo('category');break;
+    case 'time':renderCalendar(calYear,calMonth);goTo('date');break;
+    case 'info':goTo('time');break;
+    case 'confirm':if(state.infoSkipped){goTo('time')}else{renderInfoForm();goTo('info')}break;
+  }
+}
+function chooseLang(lang){
+  LANG=lang;document.getElementById('langBtn').style.display='none';
+  document.documentElement.lang=LANG==='en'?'en':'ja';
+  init(false);
+}
+function toggleLang(){
+  LANG=LANG==='en'?'ja':'en';
+  document.getElementById('langBtn').textContent=LANG==='en'?'\\u65E5\\u672C\\u8A9E':'EN';
+  document.documentElement.lang=LANG==='en'?'en':'ja';
+  monthCache={};init(true);
+}
+
+/* ── Selection helpers ── */
+function needsShampoo(){
+  var ids=Object.values(state.selections);
+  if(ids.length===0)return false;
+  var hasCut=!!state.selections['cut'];
+  if(state.selections['shampoo']==='shampoo_blow')return false;
+  return !hasCut;
+}
+function getSelTotals(){
+  var ids=Object.values(state.selections);var p=0,d=0;
+  ids.forEach(function(id){var m=allMenus[id];if(m){p+=m.price;d+=m.duration;}});
+  Object.keys(state.addons).forEach(function(id){if(state.addons[id]){var m=allMenus[id];if(m){p+=m.price;d+=m.duration;}}});
+  var shampoo=needsShampoo()&&allMenus['shampoo_blow'];
+  if(shampoo){p+=shampoo.price;d+=shampoo.duration;}
+  var addonCount=Object.keys(state.addons).filter(function(id){return state.addons[id];}).length;
+  return {price:p,duration:d,count:ids.length,hasShampoo:!!shampoo,addonCount:addonCount};
+}
+function updateSelectionBar(){
+  var bar=document.getElementById('selectionBar');var ct=document.querySelector('.container');
+  var n=Object.keys(state.selections).length;
+  if(n===0||state.step!=='category'){bar.classList.remove('show');ct.classList.remove('has-bar');return}
+  bar.classList.add('show');ct.classList.add('has-bar');
+  var tot=getSelTotals();
+  var shampooNote=tot.hasShampoo?'<div class="shampoo-note">+ '+(LANG==='en'?'Shampoo & Blow Dry':'\\u30B7\\u30E3\\u30F3\\u30D7\\u30FC\\uFF06\\u30D6\\u30ED\\u30FC')+'</div>':'';
+  document.getElementById('selInfo').innerHTML='<strong>'+tot.count+(LANG==='en'?(tot.count>1?' services':' service'):'\\u4EF6')+'</strong>'+t('yen')+tot.price.toLocaleString()+' \\u00B7 '+tot.duration+t('min')+shampooNote;
+  document.getElementById('selNextBtn').textContent=t('next');
+}
+function proceedWithSelection(){
+  var tot=getSelTotals();state.isCombo=false;state.menuIds=Object.values(state.selections);
+  Object.keys(state.addons).forEach(function(id){if(state.addons[id])state.menuIds.push(id);});
+  if(tot.hasShampoo)state.menuIds.push('shampoo_blow');
+  state.totalDuration=tot.duration;state.totalPrice=tot.price;
+  monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
+  renderCalendar(calYear,calMonth);goTo('date');
+}
+function menuNamesDisplay(){
+  return state.menuIds.map(function(id){var m=allMenus[id];return m?(LANG==='en'?m.name_en:m.name_jp):id}).join(' + ');
+}
+
+/* ── Categories — Accordion UI ── */
+function renderCategories(){
+  document.getElementById('catTitle').textContent=t('selectCategory');
+  var grid=document.getElementById('catGrid');var html='';
+  CATS.forEach(function(cat){
+    if(cat.langOnly&&cat.langOnly!==LANG)return;
+    var isComboCat=(cat.id==='combo');var hasMenu=false;
+    for(var id in allMenus){var m=allMenus[id];if(m.rebookingOnly)continue;
+      if(isComboCat){if(m.combo){hasMenu=true;break}}
+      else{if(m.category===cat.id&&!m.combo){hasMenu=true;break}}}
+    if(!hasMenu)return;
+    var selId=state.selections[cat.id];var selM=selId?allMenus[selId]:null;var isSel=!!selM;
+    var isOpen=state.openCategory===cat.id;
+    var cls='acc-header'+(isSel?' selected':'')+(isOpen?' open':'');
+    var chk=isSel?'<div class="cat-check">\\u2713</div>':'';
+    var arrow='<div class="acc-arrow">'+(isOpen?'\\u25BE':'\\u203A')+'</div>';
+    var sub='';
+    if(selM&&!isOpen){var mn=LANG==='en'?selM.name_en:selM.name_jp;sub='<div class="cat-sub">'+escHtml(mn)+'</div>';}
+    html+='<div class="acc-section">';
+    html+='<div class="'+cls+'" onclick="selectCategory(\\''+cat.id+'\\')"><div class="acc-left"><div class="cat-icon">'+cat.icon+'</div><div><div class="cat-name">'+cat[LANG]+'</div>'+sub+'</div></div><div class="acc-right">'+chk+arrow+'</div></div>';
+    if(isOpen){
+      html+='<div class="acc-body">';
+      if(!isComboCat&&cat.id!=='cut'&&cat.id!=='shampoo'){html+='<div class="acc-note">'+(LANG==='en'?'* Shampoo & blow dry auto-added when booked without cut':'\\u203B\\u30AB\\u30C3\\u30C8\\u306A\\u3057\\u306E\\u5834\\u5408\\u3001\\u30B7\\u30E3\\u30F3\\u30D7\\u30FC\\u30D6\\u30ED\\u30FC\\u81EA\\u52D5\\u8FFD\\u52A0')+'</div>';}
+      for(var id in allMenus){var m=allMenus[id];if(m.rebookingOnly)continue;
+        if(m.addon)continue;
+        if(m.langOnly&&m.langOnly!==LANG)continue;
+        if(isComboCat){if(!m.combo)continue}else{if(m.category!==cat.id||m.combo)continue}
+        var name=LANG==='en'?m.name_en:m.name_jp;
+        var isMenuSel=!isComboCat&&(state.selections[cat.id]===id);
+        var menuCls='menu-item'+(isMenuSel?' selected':'');
+        var right=isMenuSel?'<div class="menu-check">\\u2713</div><div class="menu-price faded">'+t('yen')+m.price.toLocaleString()+'</div>':'<div class="menu-price">'+t('yen')+m.price.toLocaleString()+'</div>';
+        var detail=m.duration>0?m.duration+t('min'):'';
+        var desc='';
+        if(m.desc_jp||m.desc_en){desc='<div class="menu-desc">'+escHtml(LANG==='en'?m.desc_en:m.desc_jp)+'</div>';}
+        html+='<div class="'+menuCls+'" onclick="selectMenu(\\''+id+'\\',false)"><div><div class="menu-name">'+escHtml(name)+'</div>'+desc+'<div class="menu-detail">'+detail+'</div></div>'+right+'</div>';
+        if(isMenuSel){
+          for(var aid in allMenus){var am=allMenus[aid];if(!am.addon||!am.showWith)continue;
+            if(am.showWith.indexOf(id)===-1)continue;
+            if(am.langOnly&&am.langOnly!==LANG)continue;
+            var aname=LANG==='en'?am.name_en:am.name_jp;
+            var isAddonSel=!!state.addons[aid];
+            var addonCls='addon-item'+(isAddonSel?' selected':'');
+            var adesc='';
+            if(am.desc_jp||am.desc_en){adesc='<div class="menu-desc">'+escHtml(LANG==='en'?am.desc_en:am.desc_jp)+'</div>';}
+            var aright=isAddonSel?'<div class="menu-check">\\u2713</div>':'<div class="menu-price">+'+t('yen')+am.price.toLocaleString()+'</div>';
+            var adetail=(am.duration>0?'+'+am.duration+t('min'):'')+(isAddonSel?(am.duration>0?' \\u00B7 ':'')+'+'+t('yen')+am.price.toLocaleString():'');
+            html+='<div class="'+addonCls+'" onclick="selectMenu(\\''+aid+'\\',false)"><div><div class="menu-name">+ '+escHtml(aname)+'</div>'+adesc+'<div class="menu-detail">'+adetail+'</div></div>'+aright+'</div>';
+          }
+        }
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  html+='<a class="mood-cta" href="https://find.hairisyoursignature.jp" target="_blank">'+(LANG==='en'?'Not sure? Try Mood Curator \\u2192':'\\u30E1\\u30CB\\u30E5\\u30FC\\u306B\\u8FF7\\u3063\\u305F\\u3089 \\u2192 Mood Curator \\u3067\\u8A3A\\u65AD')+'</a>';
+  grid.innerHTML=html;
+}
+function selectCategory(catId){
+  state.openCategory=state.openCategory===catId?'':catId;
+  renderCategories();
+}
+function selectMenu(menuId,isCombo){
+  var m=allMenus[menuId];if(!m)return;
+  if(isCombo){
+    state.selections={};state.addons={};state.openCategory='';state.isCombo=true;state.menuId=menuId;state.menuIds=[menuId];
+    state.totalDuration=m.duration;state.totalPrice=m.price;
+    monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
+    renderCalendar(calYear,calMonth);goTo('date');
+  }else if(m.addon){
+    if(state.addons[menuId])delete state.addons[menuId];else state.addons[menuId]=true;
+    state.isCombo=false;renderCategories();updateSelectionBar();
+  }else{
+    var cat=m.category;
+    var prevSel=state.selections[cat];
+    if(prevSel===menuId){delete state.selections[cat]}
+    else{state.selections[cat]=menuId}
+    if(prevSel&&prevSel!==menuId){for(var ak in state.addons){var ad=allMenus[ak];if(ad&&ad.showWith&&ad.showWith.indexOf(prevSel)!==-1)delete state.addons[ak]}}
+    if(!state.selections[cat]){for(var ak2 in state.addons){var ad2=allMenus[ak2];if(ad2&&ad2.category===cat)delete state.addons[ak2]}}
+    state.isCombo=false;renderCategories();updateSelectionBar();
+  }
+}
+
+/* ── Calendar ── */
+function renderCalendar(year,month){
+  document.getElementById('dateTitle').textContent=t('selectDate');showLoading();
+  var ym=year+'-'+String(month).padStart(2,'0');
+  if(monthCache[ym]){buildCalendar(year,month,monthCache[ym]);hideLoading();return}
+  var p={yearMonth:ym};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
+  api('handleDays',p).then(function(r){monthCache[ym]=r.days||[];buildCalendar(year,month,r.days||[]);hideLoading()}).catch(function(){hideLoading();showError('calendar')});
+}
+function buildCalendar(year,month,days){
+  var el=document.getElementById('calendar');
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var monthLabels=LANG==='en'?['January','February','March','April','May','June','July','August','September','October','November','December']:['1\\u6708','2\\u6708','3\\u6708','4\\u6708','5\\u6708','6\\u6708','7\\u6708','8\\u6708','9\\u6708','10\\u6708','11\\u6708','12\\u6708'];
+  var now=new Date();var curY=now.getFullYear(),curM=now.getMonth()+1;
+  var canPrev=!(year===curY&&month===curM);
+  var maxDate=new Date(now.getTime()+30*86400000);var nextFirst=new Date(year,month,1);var canNext=nextFirst<=maxDate;
+  var label=LANG==='en'?monthLabels[month-1]+' '+year:year+'\\u5E74'+monthLabels[month-1];
+  var h='<div class="cal-nav"><button class="cal-arrow" onclick="changeMonth(-1)"'+(canPrev?'':' disabled')+'>\\u2039</button><span class="cal-month">'+label+'</span><button class="cal-arrow" onclick="changeMonth(1)"'+(canNext?'':' disabled')+'>\\u203A</button></div><div class="cal-grid">';
+  for(var i=0;i<7;i++){var cls='cal-hdr';if(i===0)cls+=' sun';if(i===6)cls+=' sat';h+='<div class="'+cls+'">'+dayNames[i]+'</div>'}
+  var availMap={};days.forEach(function(d){availMap[d.date]=d.slotCount});
+  var firstDay=new Date(year,month-1,1).getDay();var totalDays=new Date(year,month,0).getDate();
+  var todayStr=curY+'-'+String(curM).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  for(var i=0;i<firstDay;i++)h+='<div class="cal-cell empty"></div>';
+  for(var d=1;d<=totalDays;d++){
+    var ds=year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var avail=availMap[ds];var isToday=ds===todayStr;
+    if(avail){h+='<div class="cal-cell available'+(isToday?' today':'')+'" onclick="selectDate(\\''+ds+'\\')"><span class="cal-day">'+d+'</span></div>'}
+    else{h+='<div class="cal-cell disabled'+(isToday?' today':'')+'"><span class="cal-day">'+d+'</span></div>'}
+  }
+  h+='</div>';el.innerHTML=h;
+}
+function changeMonth(delta){calMonth+=delta;if(calMonth>12){calMonth=1;calYear++}if(calMonth<1){calMonth=12;calYear--}renderCalendar(calYear,calMonth)}
+function selectDate(dateStr){state.date=dateStr;renderTimeSlots(dateStr);goTo('time')}
+function renderTimeSlots(dateStr){
+  document.getElementById('timeTitle').textContent=t('selectTime');
+  var parts=dateStr.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
+  document.getElementById('selectedDateInfo').textContent=menuNamesDisplay()+' \\u00B7 '+dateLabel;
+  showLoading();
+  var p={date:dateStr};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
+  api('handleSlots',p).then(function(r){
+    hideLoading();var container=document.getElementById('timeGrid');
+    if(!r.slots||r.slots.length===0){container.innerHTML='<div class="empty-state"><p>'+t('noSlots')+'</p><p>'+t('tryAnother')+'</p></div>';return}
+    var h='<div class="time-grid">';r.slots.forEach(function(s){h+='<button class="time-btn" onclick="selectTime(\\''+s.start+'\\',\\''+s.end+'\\',this)">'+s.start+'</button>'});h+='</div>';container.innerHTML=h;
+  }).catch(function(){hideLoading();showError('timeGrid')});
+}
+function loadSavedUserInfo(){try{var saved=localStorage.getItem('kommons_user');if(saved){return JSON.parse(saved)}}catch(e){}return null}
+function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email}))}catch(e){}}
+function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
+function renderMoodCuratorSummary(containerId){
+  var el=document.getElementById(containerId);if(!el)return;
+  var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
+  var rows=[];
+  if(mc.mood)rows.push(['Mood',mc.mood]);
+  if(mc.cut)rows.push([LANG==='en'?'Cut':'\\u30AB\\u30C3\\u30C8',mc.cutLength?mc.cut+' \\u2014 '+mc.cutLength:mc.cut]);
+  if(mc.color)rows.push([LANG==='en'?'Color':'\\u30AB\\u30E9\\u30FC',mc.color]);
+  if(mc.perm)rows.push([LANG==='en'?'Perm':'\\u30D1\\u30FC\\u30DE',mc.perm]);
+  if(mc.texture)rows.push([LANG==='en'?'Texture':'\\u8CEA\\u611F',mc.texture]);
+  if(mc.damage)rows.push([LANG==='en'?'Damage Level':'\\u30C0\\u30E1\\u30FC\\u30B8',mc.damage]);
+  if(mc.signatureCode)rows.push(['Signature Code',mc.signatureCode]);
+  if(rows.length===0){el.innerHTML='';return}
+  var h='<div style="background:#f5f3ee;border:1px solid #e8e6e1;border-radius:10px;padding:14px 16px;margin:12px 0">';
+  h+='<p style="font-size:10px;font-weight:600;letter-spacing:2px;color:#b8956a;margin-bottom:8px">MOOD CURATOR</p>';
+  rows.forEach(function(r){h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12px;color:#999">'+r[0]+'</span><span style="font-size:13px;color:#1a1a1a;font-style:italic">'+r[1]+'</span></div>'});
+  h+='</div>';el.innerHTML=h;
+}
+function renderInfoForm(){
+  document.getElementById('infoTitle').textContent=t('yourInfo');
+  document.getElementById('nameLabel').textContent=t('name');
+  document.getElementById('phoneLabel').textContent=t('phone');
+  document.getElementById('emailLabel').textContent=t('email');
+  document.getElementById('notesLabel').textContent=t('notes');
+  document.getElementById('nameInput').placeholder=t('namePh');
+  document.getElementById('phoneInput').placeholder=t('phonePh');
+  document.getElementById('emailInput').placeholder=t('emailPh');
+  document.getElementById('notesInput').placeholder=t('notesPh');
+  document.getElementById('phoneError').textContent=t('phoneErr');
+  document.getElementById('infoBtn').textContent=t('next');
+  document.getElementById('nameInput').value=state.name;
+  document.getElementById('phoneInput').value=state.phone;
+  document.getElementById('emailInput').value=state.email;
+  // Auto-populate notes with Mood Curator signature code
+  if(!state.notes&&MOOD_CURATOR.signatureCode){
+    state.notes='[Signature Code] '+MOOD_CURATOR.signatureCode;
+  }
+  document.getElementById('notesInput').value=state.notes;
+  // Show Mood Curator summary above the form if available
+  renderMoodCuratorSummary('infoMoodSummary');
+}
+function submitInfo(e){
+  e.preventDefault();
+  var name=document.getElementById('nameInput').value.trim();
+  var phone=document.getElementById('phoneInput').value.trim().replace(/[-\\s\\u3000]/g,'');
+  var email=document.getElementById('emailInput').value.trim();
+  var notes=document.getElementById('notesInput').value.trim();
+  if(!/^[+]?\\d{7,15}$/.test(phone)){document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
+  document.getElementById('phoneError').classList.remove('show');
+  state.name=name;state.phone=phone;state.email=email;state.notes=notes;renderConfirmation();goTo('confirm');
+}
+function renderConfirmation(){
+  document.getElementById('confirmTitle').textContent=t('confirmBooking');
+  document.getElementById('bookBtn').textContent=t('bookNow');
+  var names=menuNamesDisplay();
+  var parts=state.date.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2])+'/'+parts[0]:parts[0]+'\\u5E74'+parseInt(parts[1])+'\\u6708'+parseInt(parts[2])+'\\u65E5('+dayNames[d.getDay()]+')';
+  var card=document.getElementById('confirmCard');
+  var editLink='<div style="text-align:right;margin-top:4px"><a href="#" onclick="state.infoSkipped=false;renderInfoForm();goTo(\\'info\\');return false" style="font-size:12px;color:var(--accent);text-decoration:none">'+(LANG==='en'?'Edit info \\u270E':'\\u60C5\\u5831\\u3092\\u7DE8\\u96C6 \\u270E')+'</a></div>';
+  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'\\u301C'+state.timeEnd)+cRow(t('duration'),state.totalDuration+t('min'))+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:2px solid #f0ede8;margin:8px 0"></div>'+cRow(t('name'),state.name)+cRow(t('phone'),state.phone)+cRow(t('email'),state.email)+(state.notes?cRow(t('notes'),state.notes):'')+editLink;
+  renderMoodCuratorSummary('confirmMoodSummary');
+}
+function submitBooking(){
+  var btn=document.getElementById('bookBtn');btn.disabled=true;showLoading();
+  var bookNotes=state.notes;
+  if(MOOD_CURATOR&&MOOD_CURATOR.mood){
+    var mcParts=['[Mood Curator]','Mood: '+MOOD_CURATOR.mood];
+    if(MOOD_CURATOR.cut)mcParts.push('Cut: '+(MOOD_CURATOR.cutLength?MOOD_CURATOR.cut+' - '+MOOD_CURATOR.cutLength:MOOD_CURATOR.cut));
+    if(MOOD_CURATOR.color)mcParts.push('Color: '+MOOD_CURATOR.color);
+    if(MOOD_CURATOR.perm)mcParts.push('Perm: '+MOOD_CURATOR.perm);
+    if(MOOD_CURATOR.texture)mcParts.push('Texture: '+MOOD_CURATOR.texture);
+    if(MOOD_CURATOR.signatureCode)mcParts.push('Code: '+MOOD_CURATOR.signatureCode);
+    bookNotes=bookNotes?(bookNotes+'\\n'+mcParts.join('\\n')):mcParts.join('\\n');
+  }
+  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
+  .then(function(r){hideLoading();if(r.error){btn.disabled=false;alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('\\u57CB\\u307E')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();renderDone();goTo('done')})
+  .catch(function(){hideLoading();btn.disabled=false;alert(t('error'))});
+}
+function renderDone(){
+  document.getElementById('doneTitle').textContent=t('booked');
+  document.getElementById('doneMsg').textContent=t('bookedMsg');
+  document.getElementById('mapLink').textContent=t('mapText');
+  var names=menuNamesDisplay();
+  var parts=state.date.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
+  var card=document.getElementById('doneCard');
+  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'\\u301C'+state.timeEnd)+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:1px solid #f0ede8;margin:8px 0"></div><div style="font-size:13px;color:#888;padding:8px 0">'+t('address')+'</div>';
+  if(liffReady&&typeof liff!=='undefined'&&liff.isInClient&&liff.isInClient()){
+    var closeLabel=LANG==='en'?'Back to LINE':'LINE\\u306B\\u623B\\u308B';
+    card.insertAdjacentHTML('afterend','<button class="btn-line-close" onclick="liff.closeWindow()">'+closeLabel+'</button>');
+  }
+}
+function showError(cid){var el=document.getElementById(cid);el.innerHTML='<div class="error-msg"><p>'+t('error')+'</p><button class="retry-btn" onclick="location.reload()">\\u21BB Retry</button></div>'}
+function init(isLangSwitch){
+  document.getElementById('langBtn').textContent=LANG==='en'?'\\u65E5\\u672C\\u8A9E':'EN';
+  showLoading();
+  api('handleMenus',{lang:LANG}).then(function(r){
+    hideLoading();allMenus=r.menus||{};
+    for(var cat in state.selections){if(!allMenus[state.selections[cat]])delete state.selections[cat]}
+    if(INITIAL_MENU_ID&&allMenus[INITIAL_MENU_ID]){
+      var m=allMenus[INITIAL_MENU_ID];state.isCombo=true;state.menuId=INITIAL_MENU_ID;
+      state.menuIds=[INITIAL_MENU_ID];state.totalDuration=m.duration;state.totalPrice=m.price;
+      document.getElementById('dateBack').style.display='none';
+      var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
+      renderCalendar(calYear,calMonth);goTo('date');
+    }else{INITIAL_MENU_ID='';renderCategories();goTo('category')}
+  }).catch(function(){hideLoading();showError('catGrid');goTo('category')});
+}
+
+// ═══════════════════════════════════════════
+// Startup
+// ═══════════════════════════════════════════
+function startApp() {
+  if (LANG_FROM_URL || INITIAL_MENU_ID) {
+    if (!LANG) LANG = 'ja';
+    init(false);
+  } else {
+    goTo('lang');
+  }
+}
+
+initLiff().then(startApp);
+</script>
+</body>
+</html>
