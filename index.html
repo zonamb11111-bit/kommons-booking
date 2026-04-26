@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>予約 — kommons</title>
+<title>予約 — HIKARU TERADA English speaking hair salon in Tokyo | 高円寺美容室</title>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 
@@ -124,7 +124,7 @@ textarea.form-input{resize:vertical;min-height:60px}
 <body>
 <div class="container">
   <header class="header">
-    <div class="logo">kommons</div>
+    <div class="logo">HIKARU TERADA</div>
     <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
   </header>
   <div class="progress-wrap">
@@ -134,7 +134,7 @@ textarea.form-input{resize:vertical;min-height:60px}
   </div>
   <section id="step-lang" class="step">
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:24px;text-align:center">
-      <div style="font-size:24px;font-weight:700;letter-spacing:3px;margin-bottom:8px">kommons</div>
+      <div style="font-size:24px;font-weight:700;letter-spacing:3px;margin-bottom:8px">HIKARU TERADA</div>
       <p style="font-size:14px;color:var(--text2);margin-bottom:16px">Please select your language<br>言語を選んでください</p>
       <button class="lang-select-btn" onclick="chooseLang('ja')">日本語</button>
       <button class="lang-select-btn" onclick="chooseLang('en')">English</button>
@@ -193,7 +193,7 @@ textarea.form-input{resize:vertical;min-height:60px}
       <h2 class="step-title" id="doneTitle"></h2>
       <p class="done-msg" id="doneMsg"></p>
       <div class="confirm-card" id="doneCard"></div>
-      <a class="done-map" href="https://maps.app.goo.gl/XJqp4YFyVdCUhDN89" target="_blank" id="mapLink"></a>
+      <a class="done-map" href="https://share.google/1g0kVyXueA4LD5iWF" target="_blank" id="mapLink"></a>
     </div>
   </section>
 </div>
@@ -217,7 +217,7 @@ var lineUserId = '';
 var lineDisplayName = '';
 var liffReady = false;
 var MOOD_CURATOR = {};
-['mood','cut','cutLength','perm','color','nuance','technique','texture','damage','spa','signatureCode'].forEach(function(k) {
+['mood','cut','cutLength','perm','color','nuance','technique','texture','damage','spa','signatureCode','menu','addons','length','eyebrow','scalp'].forEach(function(k) {
   var v = urlParams.get(k);
   if (v) MOOD_CURATOR[k] = v;
 });
@@ -259,8 +259,8 @@ var CATS = [
   {id:'combo',icon:'Set',en:'Combo Menus',ja:'\u7D44\u307F\u5408\u308F\u305B\u30E1\u30CB\u30E5\u30FC'}
 ];
 var T = {
-  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7\u201315 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'\u00A5',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',mapText:'\uD83D\uDCCD View on Google Maps',address:'2F, 3-2-14 Koenjiminami, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
-  ja:{selectCategory:'\u30E1\u30CB\u30E5\u30FC\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectMenu:'\u30E1\u30CB\u30E5\u30FC\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectCombo:'\u7D44\u307F\u5408\u308F\u305B\u30E1\u30CB\u30E5\u30FC',selectDate:'\u65E5\u4ED8\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectTime:'\u6642\u9593\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',yourInfo:'\u304A\u5BA2\u69D8\u60C5\u5831',confirmBooking:'\u4E88\u7D04\u5185\u5BB9\u306E\u78BA\u8A8D',booked:'\u3054\u4E88\u7D04\u304C\u78BA\u5B9A\u3057\u307E\u3057\u305F',bookedMsg:'\u3054\u6765\u5E97\u3092\u304A\u5F85\u3061\u3057\u3066\u304A\u308A\u307E\u3059\uFF01',name:'\u304A\u540D\u524D',phone:'\u96FB\u8A71\u756A\u53F7',email:'\u30E1\u30FC\u30EB',notes:'\u5099\u8003\uFF08\u4EFB\u610F\uFF09',namePh:'\u30D5\u30EB\u30CD\u30FC\u30E0',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'\u3054\u8981\u671B\u304C\u3042\u308C\u3070...',phoneErr:'\u6709\u52B9\u306A\u96FB\u8A71\u756A\u53F7\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF087\u301C15\u6841\uFF09',next:'\u6B21\u3078',bookNow:'\u4E88\u7D04\u3059\u308B',menu:'\u30E1\u30CB\u30E5\u30FC',dateTime:'\u65E5\u6642',duration:'\u6240\u8981\u6642\u9593',price:'\u6599\u91D1',min:'\u5206',yen:'\u00A5',noSlots:'\u3053\u306E\u65E5\u306F\u7A7A\u304D\u304C\u3042\u308A\u307E\u305B\u3093',tryAnother:'\u5225\u306E\u65E5\u3092\u304A\u9078\u3073\u304F\u3060\u3055\u3044',error:'\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002',mapText:'\uD83D\uDCCD Google Maps\u3067\u898B\u308B',address:'\u6771\u4EAC\u90FD\u6749\u4E26\u533A\u9AD8\u5186\u5BFA\u53573-2-14 2F',sun:'\u65E5',mon:'\u6708',tue:'\u706B',wed:'\u6C34',thu:'\u6728',fri:'\u91D1',sat:'\u571F',stepMenu:'\u30E1\u30CB\u30E5\u30FC',stepDate:'\u65E5\u4ED8',stepTime:'\u6642\u9593',stepInfo:'\u60C5\u5831',stepConfirm:'\u78BA\u8A8D'}
+  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7\u201315 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'\u00A5',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',mapText:'\uD83D\uDCCD View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
+  ja:{selectCategory:'\u30E1\u30CB\u30E5\u30FC\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectMenu:'\u30E1\u30CB\u30E5\u30FC\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectCombo:'\u7D44\u307F\u5408\u308F\u305B\u30E1\u30CB\u30E5\u30FC',selectDate:'\u65E5\u4ED8\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectTime:'\u6642\u9593\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',yourInfo:'\u304A\u5BA2\u69D8\u60C5\u5831',confirmBooking:'\u4E88\u7D04\u5185\u5BB9\u306E\u78BA\u8A8D',booked:'\u3054\u4E88\u7D04\u304C\u78BA\u5B9A\u3057\u307E\u3057\u305F',bookedMsg:'\u3054\u6765\u5E97\u3092\u304A\u5F85\u3061\u3057\u3066\u304A\u308A\u307E\u3059\uFF01',name:'\u304A\u540D\u524D',phone:'\u96FB\u8A71\u756A\u53F7',email:'\u30E1\u30FC\u30EB',notes:'\u5099\u8003\uFF08\u4EFB\u610F\uFF09',namePh:'\u30D5\u30EB\u30CD\u30FC\u30E0',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'\u3054\u8981\u671B\u304C\u3042\u308C\u3070...',phoneErr:'\u6709\u52B9\u306A\u96FB\u8A71\u756A\u53F7\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF087\u301C15\u6841\uFF09',next:'\u6B21\u3078',bookNow:'\u4E88\u7D04\u3059\u308B',menu:'\u30E1\u30CB\u30E5\u30FC',dateTime:'\u65E5\u6642',duration:'\u6240\u8981\u6642\u9593',price:'\u6599\u91D1',min:'\u5206',yen:'\u00A5',noSlots:'\u3053\u306E\u65E5\u306F\u7A7A\u304D\u304C\u3042\u308A\u307E\u305B\u3093',tryAnother:'\u5225\u306E\u65E5\u3092\u304A\u9078\u3073\u304F\u3060\u3055\u3044',error:'\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002',mapText:'\uD83D\uDCCD Google Maps\u3067\u898B\u308B',address:'\u6771\u4EAC\u90FD\u6749\u4E26\u533A\u9AD8\u5186\u5BFA\u5357 4-9-8 GRANDSTATUS\u6817\u539F 2F Mirror A',sun:'\u65E5',mon:'\u6708',tue:'\u706B',wed:'\u6C34',thu:'\u6728',fri:'\u91D1',sat:'\u571F',stepMenu:'\u30E1\u30CB\u30E5\u30FC',stepDate:'\u65E5\u4ED8',stepTime:'\u6642\u9593',stepInfo:'\u60C5\u5831',stepConfirm:'\u78BA\u8A8D'}
 };
 function t(k){return T[LANG][k]||k}
 
@@ -479,11 +479,15 @@ function renderMoodCuratorSummary(containerId){
   var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
   var rows=[];
   if(mc.mood)rows.push(['Mood',mc.mood]);
-  if(mc.cut)rows.push([LANG==='en'?'Cut':'\u30AB\u30C3\u30C8',mc.cutLength?mc.cut+' \u2014 '+mc.cutLength:mc.cut]);
-  if(mc.color)rows.push([LANG==='en'?'Color':'\u30AB\u30E9\u30FC',mc.color]);
-  if(mc.perm)rows.push([LANG==='en'?'Perm':'\u30D1\u30FC\u30DE',mc.perm]);
-  if(mc.texture)rows.push([LANG==='en'?'Texture':'\u8CEA\u611F',mc.texture]);
-  if(mc.damage)rows.push([LANG==='en'?'Damage Level':'\u30C0\u30E1\u30FC\u30B8',mc.damage]);
+  if(mc.length)rows.push([LANG==='en'?'Length':'希望レングス',mc.length]);
+  if(mc.cut)rows.push([LANG==='en'?'Cut':'カット',mc.cutLength?mc.cut+' — '+mc.cutLength:mc.cut]);
+  if(mc.color)rows.push([LANG==='en'?'Color':'カラー',mc.color]);
+  if(mc.perm&&mc.perm!=='None')rows.push([LANG==='en'?'Perm':'パーマ',mc.perm]);
+  if(mc.texture)rows.push([LANG==='en'?'Texture':'質感',mc.texture]);
+  if(mc.damage)rows.push([LANG==='en'?'Damage Level':'ダメージ',mc.damage]);
+  if(mc.eyebrow==='true')rows.push([LANG==='en'?'Eyebrow Cut':'眉カット',LANG==='en'?'Yes':'あり']);
+  if(mc.spa&&mc.spa!=='none')rows.push([LANG==='en'?'Head Spa':'ヘッドスパ',mc.spa]);
+  if(mc.scalp&&mc.scalp!=='none')rows.push([LANG==='en'?'Scalp Concern':'頭皮',mc.scalp]);
   if(mc.signatureCode)rows.push(['Signature Code',mc.signatureCode]);
   if(rows.length===0){el.innerHTML='';return}
   var h='<div style="background:#f5f3ee;border:1px solid #e8e6e1;border-radius:10px;padding:14px 16px;margin:12px 0">';
@@ -541,10 +545,17 @@ function submitBooking(){
   var bookNotes=state.notes;
   if(MOOD_CURATOR&&MOOD_CURATOR.mood){
     var mcParts=['[Mood Curator]','Mood: '+MOOD_CURATOR.mood];
+    if(MOOD_CURATOR.length)mcParts.push('Length: '+MOOD_CURATOR.length);
     if(MOOD_CURATOR.cut)mcParts.push('Cut: '+(MOOD_CURATOR.cutLength?MOOD_CURATOR.cut+' - '+MOOD_CURATOR.cutLength:MOOD_CURATOR.cut));
     if(MOOD_CURATOR.color)mcParts.push('Color: '+MOOD_CURATOR.color);
-    if(MOOD_CURATOR.perm)mcParts.push('Perm: '+MOOD_CURATOR.perm);
+    if(MOOD_CURATOR.perm&&MOOD_CURATOR.perm!=='None')mcParts.push('Perm: '+MOOD_CURATOR.perm);
     if(MOOD_CURATOR.texture)mcParts.push('Texture: '+MOOD_CURATOR.texture);
+    if(MOOD_CURATOR.damage)mcParts.push('Damage: '+MOOD_CURATOR.damage);
+    if(MOOD_CURATOR.eyebrow==='true')mcParts.push('Eyebrow: Yes');
+    if(MOOD_CURATOR.spa&&MOOD_CURATOR.spa!=='none')mcParts.push('Head Spa: '+MOOD_CURATOR.spa);
+    if(MOOD_CURATOR.scalp&&MOOD_CURATOR.scalp!=='none')mcParts.push('Scalp: '+MOOD_CURATOR.scalp);
+    if(MOOD_CURATOR.menu)mcParts.push('Menu: '+MOOD_CURATOR.menu);
+    if(MOOD_CURATOR.addons)mcParts.push('Addons: '+MOOD_CURATOR.addons);
     if(MOOD_CURATOR.signatureCode)mcParts.push('Code: '+MOOD_CURATOR.signatureCode);
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
