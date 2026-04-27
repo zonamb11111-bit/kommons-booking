@@ -211,7 +211,7 @@ var API_MAP = {handleMenus:'menus',handleSlots:'slots',handleDays:'days',handleB
 var urlParams = new URLSearchParams(window.location.search);
 var LANG = urlParams.get('lang') || '';
 if (LANG === 'jp') LANG = 'ja';
-var INITIAL_MENU_ID = (urlParams.get('menuId') || '').replace(/[^a-zA-Z0-9_]/g, '');
+var INITIAL_MENU_ID = (urlParams.get('menuId') || urlParams.get('menu') || '').replace(/[^a-zA-Z0-9_]/g, '');
 var LANG_FROM_URL = !!urlParams.get('lang');
 var lineUserId = '';
 var lineDisplayName = '';
