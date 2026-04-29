@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PL8XGR2P');</script>
+<!-- End Google Tag Manager -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>予約 — HIKARU TERADA English speaking hair salon in Tokyo | 高円寺美容室</title>
@@ -122,6 +129,10 @@ textarea.form-input{resize:vertical;min-height:60px}
 </style>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL8XGR2P"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="container">
   <header class="header">
     <div class="logo">HIKARU TERADA</div>
@@ -560,7 +571,7 @@ function submitBooking(){
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
   api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
-  .then(function(r){hideLoading();if(r.error){btn.disabled=false;alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('\u57CB\u307E')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();renderDone();goTo('done')})
+  .then(function(r){hideLoading();if(r.error){btn.disabled=false;alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('\u57CB\u307E')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'book_complete',value:state.totalPrice,currency:'JPY',menu_ids:state.menuIds.join(','),duration_min:state.totalDuration,booking_lang:LANG,source:lineUserId?'web_liff':'web',transaction_id:(r&&r.booking&&r.booking.eventId)||''});renderDone();goTo('done')})
   .catch(function(){hideLoading();btn.disabled=false;alert(t('error'))});
 }
 function renderDone(){
@@ -582,6 +593,7 @@ function showError(cid){var el=document.getElementById(cid);el.innerHTML='<div c
 function init(isLangSwitch){
   document.getElementById('langBtn').textContent=LANG==='en'?'\u65E5\u672C\u8A9E':'EN';
   showLoading();
+  if(!isLangSwitch){window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'book_form_view',entry_menu:INITIAL_MENU_ID||'',entry_lang:LANG||'',has_mood_curator:!!(MOOD_CURATOR.mood||MOOD_CURATOR.menu)});}
   api('handleMenus',{lang:LANG}).then(function(r){
     hideLoading();allMenus=r.menus||{};
     for(var cat in state.selections){if(!allMenus[state.selections[cat]])delete state.selections[cat]}
