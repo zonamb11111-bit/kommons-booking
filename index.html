@@ -588,6 +588,16 @@ function init(isLangSwitch){
     if(INITIAL_MENU_ID&&allMenus[INITIAL_MENU_ID]){
       var m=allMenus[INITIAL_MENU_ID];state.isCombo=true;state.menuId=INITIAL_MENU_ID;
       state.menuIds=[INITIAL_MENU_ID];state.totalDuration=m.duration;state.totalPrice=m.price;
+      if(MOOD_CURATOR.addons){
+        var addonIds=MOOD_CURATOR.addons.split(',').filter(function(id){return id&&allMenus[id]&&id!==INITIAL_MENU_ID;});
+        if(addonIds.length){
+          state.isCombo=false;
+          addonIds.forEach(function(aid){
+            state.menuIds.push(aid);state.addons[aid]=true;
+            state.totalDuration+=allMenus[aid].duration;state.totalPrice+=allMenus[aid].price;
+          });
+        }
+      }
       document.getElementById('dateBack').style.display='none';
       var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
       renderCalendar(calYear,calMonth);goTo('date');
