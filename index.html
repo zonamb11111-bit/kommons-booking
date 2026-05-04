@@ -232,7 +232,14 @@ var MOOD_CURATOR = {};
   var v = urlParams.get(k);
   if (v) MOOD_CURATOR[k] = v;
 });
-function api(fn, params) {
+
+/* ── API with retry & timeout ── */
+var API_TIMEOUT = 15000;
+var API_MAX_RETRIES = 3;
+var API_RETRY_DELAYS = [1000, 2000, 4000];
+
+function api(fn, params, retryCount) {
+  retryCount = retryCount || 0;
   var action = API_MAP[fn] || fn;
   var qs = new URLSearchParams({ action: action });
   if (params) {
@@ -242,8 +249,29 @@ function api(fn, params) {
       }
     });
   }
-  return fetch(GAS_API + '?' + qs.toString()).then(function(r) { return r.json(); });
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function() { controller.abort(); }, API_TIMEOUT);
+
+  return fetch(GAS_API + '?' + qs.toString(), { signal: controller.signal })
+    .then(function(r) {
+      clearTimeout(timeoutId);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .catch(function(err) {
+      clearTimeout(timeoutId);
+      if (retryCount < API_MAX_RETRIES - 1) {
+        var delay = API_RETRY_DELAYS[retryCount] || 4000;
+        return new Promise(function(resolve) {
+          setTimeout(resolve, delay);
+        }).then(function() {
+          return api(fn, params, retryCount + 1);
+        });
+      }
+      throw err;
+    });
 }
+
 function initLiff() {
   if (!LIFF_ID) return Promise.resolve();
   return liff.init({ liffId: LIFF_ID }).then(function() {
@@ -261,17 +289,17 @@ var allMenus = {};
 var calYear, calMonth;
 var monthCache = {};
 var CATS = [
-  {id:'cut',icon:'Cut',en:'Cut',ja:'\u30AB\u30C3\u30C8'},
-  {id:'color',icon:'Color',en:'Color',ja:'\u30AB\u30E9\u30FC'},
-  {id:'perm',icon:'Perm',en:'Perm',ja:'\u30D1\u30FC\u30DE'},
-  {id:'treatment',icon:'Care',en:'Treatment',ja:'\u30C8\u30EA\u30FC\u30C8\u30E1\u30F3\u30C8'},
-  {id:'headspa',icon:'Spa',en:'Head Spa',ja:'\u30D8\u30C3\u30C9\u30B9\u30D1'},
+  {id:'cut',icon:'Cut',en:'Cut',ja:'カット'},
+  {id:'color',icon:'Color',en:'Color',ja:'カラー'},
+  {id:'perm',icon:'Perm',en:'Perm',ja:'パーマ'},
+  {id:'treatment',icon:'Care',en:'Treatment',ja:'トリートメント'},
+  {id:'headspa',icon:'Spa',en:'Head Spa',ja:'ヘッドスパ'},
   {id:'shampoo',icon:'S&B',en:'Shampoo Blow',ja:'',langOnly:'en'},
-  {id:'combo',icon:'Set',en:'Combo Menus',ja:'\u7D44\u307F\u5408\u308F\u305B\u30E1\u30CB\u30E5\u30FC'}
+  {id:'combo',icon:'Set',en:'Combo Menus',ja:'組み合わせメニュー'}
 ];
 var T = {
-  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7\u201315 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'\u00A5',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',mapText:'\uD83D\uDCCD View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
-  ja:{selectCategory:'\u30E1\u30CB\u30E5\u30FC\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectMenu:'\u30E1\u30CB\u30E5\u30FC\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectCombo:'\u7D44\u307F\u5408\u308F\u305B\u30E1\u30CB\u30E5\u30FC',selectDate:'\u65E5\u4ED8\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',selectTime:'\u6642\u9593\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044',yourInfo:'\u304A\u5BA2\u69D8\u60C5\u5831',confirmBooking:'\u4E88\u7D04\u5185\u5BB9\u306E\u78BA\u8A8D',booked:'\u3054\u4E88\u7D04\u304C\u78BA\u5B9A\u3057\u307E\u3057\u305F',bookedMsg:'\u3054\u6765\u5E97\u3092\u304A\u5F85\u3061\u3057\u3066\u304A\u308A\u307E\u3059\uFF01',name:'\u304A\u540D\u524D',phone:'\u96FB\u8A71\u756A\u53F7',email:'\u30E1\u30FC\u30EB',notes:'\u5099\u8003\uFF08\u4EFB\u610F\uFF09',namePh:'\u30D5\u30EB\u30CD\u30FC\u30E0',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'\u3054\u8981\u671B\u304C\u3042\u308C\u3070...',phoneErr:'\u6709\u52B9\u306A\u96FB\u8A71\u756A\u53F7\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF087\u301C15\u6841\uFF09',next:'\u6B21\u3078',bookNow:'\u4E88\u7D04\u3059\u308B',menu:'\u30E1\u30CB\u30E5\u30FC',dateTime:'\u65E5\u6642',duration:'\u6240\u8981\u6642\u9593',price:'\u6599\u91D1',min:'\u5206',yen:'\u00A5',noSlots:'\u3053\u306E\u65E5\u306F\u7A7A\u304D\u304C\u3042\u308A\u307E\u305B\u3093',tryAnother:'\u5225\u306E\u65E5\u3092\u304A\u9078\u3073\u304F\u3060\u3055\u3044',error:'\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002',mapText:'\uD83D\uDCCD Google Maps\u3067\u898B\u308B',address:'\u6771\u4EAC\u90FD\u6749\u4E26\u533A\u9AD8\u5186\u5BFA\u5357 4-9-8 GRANDSTATUS\u6817\u539F 2F Mirror A',sun:'\u65E5',mon:'\u6708',tue:'\u706B',wed:'\u6C34',thu:'\u6728',fri:'\u91D1',sat:'\u571F',stepMenu:'\u30E1\u30CB\u30E5\u30FC',stepDate:'\u65E5\u4ED8',stepTime:'\u6642\u9593',stepInfo:'\u60C5\u5831',stepConfirm:'\u78BA\u8A8D'}
+  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7–15 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'¥',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',errorRetrying:'Connection issue. Retrying...',mapText:'📍 View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
+  ja:{selectCategory:'メニューを選んでください',selectMenu:'メニューを選んでください',selectCombo:'組み合わせメニュー',selectDate:'日付を選んでください',selectTime:'時間を選んでください',yourInfo:'お客様情報',confirmBooking:'予約内容の確認',booked:'ご予約が確定しました',bookedMsg:'ご来店をお待ちしております！',name:'お名前',phone:'電話番号',email:'メール',notes:'備考（任意）',namePh:'フルネーム',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'ご要望があれば...',phoneErr:'有効な電話番号を入力してください（7〜15桁）',next:'次へ',bookNow:'予約する',menu:'メニュー',dateTime:'日時',duration:'所要時間',price:'料金',min:'分',yen:'¥',noSlots:'この日は空きがありません',tryAnother:'別の日をお選びください',error:'エラーが発生しました。もう一度お試しください。',errorRetrying:'接続に問題があります。再試行中...',mapText:'📍 Google Mapsで見る',address:'東京都杉並区高円寺南 4-9-8 GRANDSTATUS栗原 2F Mirror A',sun:'日',mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',stepMenu:'メニュー',stepDate:'日付',stepTime:'時間',stepInfo:'情報',stepConfirm:'確認'}
 };
 function t(k){return T[LANG][k]||k}
 
@@ -303,14 +331,16 @@ function goBack(){
     case 'confirm':if(state.infoSkipped){goTo('time')}else{renderInfoForm();goTo('info')}break;
   }
 }
+function track(event,data){window.dataLayer=window.dataLayer||[];var o={event:event};if(data){Object.keys(data).forEach(function(k){o[k]=data[k]})}window.dataLayer.push(o)}
 function chooseLang(lang){
   LANG=lang;document.getElementById('langBtn').style.display='none';
   document.documentElement.lang=LANG==='en'?'en':'ja';
+  track('select_language',{language:lang});
   init(false);
 }
 function toggleLang(){
   LANG=LANG==='en'?'ja':'en';
-  document.getElementById('langBtn').textContent=LANG==='en'?'\u65E5\u672C\u8A9E':'EN';
+  document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
   document.documentElement.lang=LANG==='en'?'en':'ja';
   monthCache={};init(true);
 }
@@ -338,8 +368,8 @@ function updateSelectionBar(){
   if(n===0||state.step!=='category'){bar.classList.remove('show');ct.classList.remove('has-bar');return}
   bar.classList.add('show');ct.classList.add('has-bar');
   var tot=getSelTotals();
-  var shampooNote=tot.hasShampoo?'<div class="shampoo-note">+ '+(LANG==='en'?'Shampoo & Blow Dry':'\u30B7\u30E3\u30F3\u30D7\u30FC\uFF06\u30D6\u30ED\u30FC')+'</div>':'';
-  document.getElementById('selInfo').innerHTML='<strong>'+tot.count+(LANG==='en'?(tot.count>1?' services':' service'):'\u4EF6')+'</strong>'+t('yen')+tot.price.toLocaleString()+' \u00B7 '+tot.duration+t('min')+shampooNote;
+  var shampooNote=tot.hasShampoo?'<div class="shampoo-note">+ '+(LANG==='en'?'Shampoo & Blow Dry':'シャンプー＆ブロー')+'</div>':'';
+  document.getElementById('selInfo').innerHTML='<strong>'+tot.count+(LANG==='en'?(tot.count>1?' services':' service'):'件')+'</strong>'+t('yen')+tot.price.toLocaleString()+' · '+tot.duration+t('min')+shampooNote;
   document.getElementById('selNextBtn').textContent=t('next');
 }
 function proceedWithSelection(){
@@ -347,6 +377,7 @@ function proceedWithSelection(){
   Object.keys(state.addons).forEach(function(id){if(state.addons[id])state.menuIds.push(id);});
   if(tot.hasShampoo)state.menuIds.push('shampoo_blow');
   state.totalDuration=tot.duration;state.totalPrice=tot.price;
+  track('select_menu',{menu_ids:state.menuIds.join(','),menu_count:state.menuIds.length,value:tot.price,duration_min:tot.duration});
   monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
   renderCalendar(calYear,calMonth);goTo('date');
 }
@@ -368,15 +399,15 @@ function renderCategories(){
     var selId=state.selections[cat.id];var selM=selId?allMenus[selId]:null;var isSel=!!selM;
     var isOpen=state.openCategory===cat.id;
     var cls='acc-header'+(isSel?' selected':'')+(isOpen?' open':'');
-    var chk=isSel?'<div class="cat-check">\u2713</div>':'';
-    var arrow='<div class="acc-arrow">'+(isOpen?'\u25BE':'\u203A')+'</div>';
+    var chk=isSel?'<div class="cat-check">✓</div>':'';
+    var arrow='<div class="acc-arrow">'+(isOpen?'▾':'›')+'</div>';
     var sub='';
     if(selM&&!isOpen){var mn=LANG==='en'?selM.name_en:selM.name_jp;sub='<div class="cat-sub">'+escHtml(mn)+'</div>';}
     html+='<div class="acc-section">';
     html+='<div class="'+cls+'" onclick="selectCategory(\''+cat.id+'\')"><div class="acc-left"><div class="cat-icon">'+cat.icon+'</div><div><div class="cat-name">'+cat[LANG]+'</div>'+sub+'</div></div><div class="acc-right">'+chk+arrow+'</div></div>';
     if(isOpen){
       html+='<div class="acc-body">';
-      if(!isComboCat&&cat.id!=='cut'&&cat.id!=='shampoo'){html+='<div class="acc-note">'+(LANG==='en'?'* Shampoo & blow dry auto-added when booked without cut':'\u203B\u30AB\u30C3\u30C8\u306A\u3057\u306E\u5834\u5408\u3001\u30B7\u30E3\u30F3\u30D7\u30FC\u30D6\u30ED\u30FC\u81EA\u52D5\u8FFD\u52A0')+'</div>';}
+      if(!isComboCat&&cat.id!=='cut'&&cat.id!=='shampoo'){html+='<div class="acc-note">'+(LANG==='en'?'* Shampoo & blow dry auto-added when booked without cut':'※カットなしの場合、シャンプーブロー自動追加')+'</div>';}
       for(var id in allMenus){var m=allMenus[id];if(m.rebookingOnly)continue;
         if(m.addon)continue;
         if(m.langOnly&&m.langOnly!==LANG)continue;
@@ -384,7 +415,7 @@ function renderCategories(){
         var name=LANG==='en'?m.name_en:m.name_jp;
         var isMenuSel=!isComboCat&&(state.selections[cat.id]===id);
         var menuCls='menu-item'+(isMenuSel?' selected':'');
-        var right=isMenuSel?'<div class="menu-check">\u2713</div><div class="menu-price faded">'+t('yen')+m.price.toLocaleString()+'</div>':'<div class="menu-price">'+t('yen')+m.price.toLocaleString()+'</div>';
+        var right=isMenuSel?'<div class="menu-check">✓</div><div class="menu-price faded">'+t('yen')+m.price.toLocaleString()+'</div>':'<div class="menu-price">'+t('yen')+m.price.toLocaleString()+'</div>';
         var detail=m.duration>0?m.duration+t('min'):'';
         var desc='';
         if(m.desc_jp||m.desc_en){desc='<div class="menu-desc">'+escHtml(LANG==='en'?m.desc_en:m.desc_jp)+'</div>';}
@@ -398,8 +429,8 @@ function renderCategories(){
             var addonCls='addon-item'+(isAddonSel?' selected':'');
             var adesc='';
             if(am.desc_jp||am.desc_en){adesc='<div class="menu-desc">'+escHtml(LANG==='en'?am.desc_en:am.desc_jp)+'</div>';}
-            var aright=isAddonSel?'<div class="menu-check">\u2713</div>':'<div class="menu-price">+'+t('yen')+am.price.toLocaleString()+'</div>';
-            var adetail=(am.duration>0?'+'+am.duration+t('min'):'')+(isAddonSel?(am.duration>0?' \u00B7 ':'')+'+'+t('yen')+am.price.toLocaleString():'');
+            var aright=isAddonSel?'<div class="menu-check">✓</div>':'<div class="menu-price">+'+t('yen')+am.price.toLocaleString()+'</div>';
+            var adetail=(am.duration>0?'+'+am.duration+t('min'):'')+(isAddonSel?(am.duration>0?' · ':'')+'+'+t('yen')+am.price.toLocaleString():'');
             html+='<div class="'+addonCls+'" onclick="selectMenu(\''+aid+'\',false)"><div><div class="menu-name">+ '+escHtml(aname)+'</div>'+adesc+'<div class="menu-detail">'+adetail+'</div></div>'+aright+'</div>';
           }
         }
@@ -408,7 +439,7 @@ function renderCategories(){
     }
     html+='</div>';
   });
-  html+='<a class="mood-cta" href="https://find.hairisyoursignature.jp" target="_blank">'+(LANG==='en'?'Not sure? Try Mood Curator \u2192':'\u30E1\u30CB\u30E5\u30FC\u306B\u8FF7\u3063\u305F\u3089 \u2192 Mood Curator \u3067\u8A3A\u65AD')+'</a>';
+  html+='<a class="mood-cta" href="https://find.hairisyoursignature.jp" target="_blank">'+(LANG==='en'?'Not sure? Try Mood Curator →':'メニューに迷ったら → Mood Curator で診断')+'</a>';
   grid.innerHTML=html;
 }
 function selectCategory(catId){
@@ -420,6 +451,7 @@ function selectMenu(menuId,isCombo){
   if(isCombo){
     state.selections={};state.addons={};state.openCategory='';state.isCombo=true;state.menuId=menuId;state.menuIds=[menuId];
     state.totalDuration=m.duration;state.totalPrice=m.price;
+    track('select_menu',{menu_ids:menuId,menu_count:1,value:m.price,duration_min:m.duration,is_combo:'true'});
     monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
     renderCalendar(calYear,calMonth);goTo('date');
   }else if(m.addon){
@@ -447,12 +479,12 @@ function renderCalendar(year,month){
 function buildCalendar(year,month,days){
   var el=document.getElementById('calendar');
   var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
-  var monthLabels=LANG==='en'?['January','February','March','April','May','June','July','August','September','October','November','December']:['1\u6708','2\u6708','3\u6708','4\u6708','5\u6708','6\u6708','7\u6708','8\u6708','9\u6708','10\u6708','11\u6708','12\u6708'];
+  var monthLabels=LANG==='en'?['January','February','March','April','May','June','July','August','September','October','November','December']:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   var now=new Date();var curY=now.getFullYear(),curM=now.getMonth()+1;
   var canPrev=!(year===curY&&month===curM);
   var maxDate=new Date(now.getTime()+30*86400000);var nextFirst=new Date(year,month,1);var canNext=nextFirst<=maxDate;
-  var label=LANG==='en'?monthLabels[month-1]+' '+year:year+'\u5E74'+monthLabels[month-1];
-  var h='<div class="cal-nav"><button class="cal-arrow" onclick="changeMonth(-1)"'+(canPrev?'':' disabled')+'>\u2039</button><span class="cal-month">'+label+'</span><button class="cal-arrow" onclick="changeMonth(1)"'+(canNext?'':' disabled')+'>\u203A</button></div><div class="cal-grid">';
+  var label=LANG==='en'?monthLabels[month-1]+' '+year:year+'年'+monthLabels[month-1];
+  var h='<div class="cal-nav"><button class="cal-arrow" onclick="changeMonth(-1)"'+(canPrev?'':' disabled')+'>‹</button><span class="cal-month">'+label+'</span><button class="cal-arrow" onclick="changeMonth(1)"'+(canNext?'':' disabled')+'>›</button></div><div class="cal-grid">';
   for(var i=0;i<7;i++){var cls='cal-hdr';if(i===0)cls+=' sun';if(i===6)cls+=' sat';h+='<div class="'+cls+'">'+dayNames[i]+'</div>'}
   var availMap={};days.forEach(function(d){availMap[d.date]=d.slotCount});
   var firstDay=new Date(year,month-1,1).getDay();var totalDays=new Date(year,month,0).getDate();
@@ -467,13 +499,13 @@ function buildCalendar(year,month,days){
   h+='</div>';el.innerHTML=h;
 }
 function changeMonth(delta){calMonth+=delta;if(calMonth>12){calMonth=1;calYear++}if(calMonth<1){calMonth=12;calYear--}renderCalendar(calYear,calMonth)}
-function selectDate(dateStr){state.date=dateStr;renderTimeSlots(dateStr);goTo('time')}
+function selectDate(dateStr){state.date=dateStr;track('select_date',{booking_date:dateStr});renderTimeSlots(dateStr);goTo('time')}
 function renderTimeSlots(dateStr){
   document.getElementById('timeTitle').textContent=t('selectTime');
   var parts=dateStr.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
   var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
   var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
-  document.getElementById('selectedDateInfo').textContent=menuNamesDisplay()+' \u00B7 '+dateLabel;
+  document.getElementById('selectedDateInfo').textContent=menuNamesDisplay()+' · '+dateLabel;
   showLoading();
   var p={date:dateStr};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
   api('handleSlots',p).then(function(r){
@@ -484,7 +516,7 @@ function renderTimeSlots(dateStr){
 }
 function loadSavedUserInfo(){try{var saved=localStorage.getItem('kommons_user');if(saved){return JSON.parse(saved)}}catch(e){}return null}
 function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email}))}catch(e){}}
-function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
+function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',{booking_date:state.date,booking_time:start});var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
 function renderMoodCuratorSummary(containerId){
   var el=document.getElementById(containerId);if(!el)return;
   var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
@@ -521,23 +553,21 @@ function renderInfoForm(){
   document.getElementById('nameInput').value=state.name;
   document.getElementById('phoneInput').value=state.phone;
   document.getElementById('emailInput').value=state.email;
-  // Auto-populate notes with Mood Curator signature code
   if(!state.notes&&MOOD_CURATOR.signatureCode){
     state.notes='[Signature Code] '+MOOD_CURATOR.signatureCode;
   }
   document.getElementById('notesInput').value=state.notes;
-  // Show Mood Curator summary above the form if available
   renderMoodCuratorSummary('infoMoodSummary');
 }
 function submitInfo(e){
   e.preventDefault();
   var name=document.getElementById('nameInput').value.trim();
-  var phone=document.getElementById('phoneInput').value.trim().replace(/[-\s\u3000]/g,'');
+  var phone=document.getElementById('phoneInput').value.trim().replace(/[-\s　]/g,'');
   var email=document.getElementById('emailInput').value.trim();
   var notes=document.getElementById('notesInput').value.trim();
   if(!/^[+]?\d{7,15}$/.test(phone)){document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
   document.getElementById('phoneError').classList.remove('show');
-  state.name=name;state.phone=phone;state.email=email;state.notes=notes;renderConfirmation();goTo('confirm');
+  state.name=name;state.phone=phone;state.email=email;state.notes=notes;track('submit_info');renderConfirmation();goTo('confirm');
 }
 function renderConfirmation(){
   document.getElementById('confirmTitle').textContent=t('confirmBooking');
@@ -545,10 +575,10 @@ function renderConfirmation(){
   var names=menuNamesDisplay();
   var parts=state.date.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
   var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
-  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2])+'/'+parts[0]:parts[0]+'\u5E74'+parseInt(parts[1])+'\u6708'+parseInt(parts[2])+'\u65E5('+dayNames[d.getDay()]+')';
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2])+'/'+parts[0]:parts[0]+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日('+dayNames[d.getDay()]+')';
   var card=document.getElementById('confirmCard');
-  var editLink='<div style="text-align:right;margin-top:4px"><a href="#" onclick="state.infoSkipped=false;renderInfoForm();goTo(\'info\');return false" style="font-size:12px;color:var(--accent);text-decoration:none">'+(LANG==='en'?'Edit info \u270E':'\u60C5\u5831\u3092\u7DE8\u96C6 \u270E')+'</a></div>';
-  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'\u301C'+state.timeEnd)+cRow(t('duration'),state.totalDuration+t('min'))+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:2px solid #f0ede8;margin:8px 0"></div>'+cRow(t('name'),state.name)+cRow(t('phone'),state.phone)+cRow(t('email'),state.email)+(state.notes?cRow(t('notes'),state.notes):'')+editLink;
+  var editLink='<div style="text-align:right;margin-top:4px"><a href="#" onclick="state.infoSkipped=false;renderInfoForm();goTo(\'info\');return false" style="font-size:12px;color:var(--accent);text-decoration:none">'+(LANG==='en'?'Edit info ✎':'情報を編集 ✎')+'</a></div>';
+  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'〜'+state.timeEnd)+cRow(t('duration'),state.totalDuration+t('min'))+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:2px solid #f0ede8;margin:8px 0"></div>'+cRow(t('name'),state.name)+cRow(t('phone'),state.phone)+cRow(t('email'),state.email)+(state.notes?cRow(t('notes'),state.notes):'')+editLink;
   renderMoodCuratorSummary('confirmMoodSummary');
 }
 function submitBooking(){
@@ -571,7 +601,7 @@ function submitBooking(){
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
   api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
-  .then(function(r){hideLoading();if(r.error){btn.disabled=false;alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('\u57CB\u307E')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'book_complete',value:state.totalPrice,currency:'JPY',menu_ids:state.menuIds.join(','),duration_min:state.totalDuration,booking_lang:LANG,source:lineUserId?'web_liff':'web',transaction_id:(r&&r.booking&&r.booking.eventId)||''});renderDone();goTo('done')})
+  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',{error_message:r.error});alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',{value:state.totalPrice,currency:'JPY',menu_ids:state.menuIds.join(','),duration_min:state.totalDuration,booking_lang:LANG,source:lineUserId?'web_liff':'web',transaction_id:(r&&r.booking&&r.booking.eventId)||''});renderDone();goTo('done')})
   .catch(function(){hideLoading();btn.disabled=false;alert(t('error'))});
 }
 function renderDone(){
@@ -583,17 +613,27 @@ function renderDone(){
   var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
   var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
   var card=document.getElementById('doneCard');
-  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'\u301C'+state.timeEnd)+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:1px solid #f0ede8;margin:8px 0"></div><div style="font-size:13px;color:#888;padding:8px 0">'+t('address')+'</div>';
+  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'〜'+state.timeEnd)+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:1px solid #f0ede8;margin:8px 0"></div><div style="font-size:13px;color:#888;padding:8px 0">'+t('address')+'</div>';
   if(liffReady&&typeof liff!=='undefined'&&liff.isInClient&&liff.isInClient()){
-    var closeLabel=LANG==='en'?'Back to LINE':'LINE\u306B\u623B\u308B';
+    var closeLabel=LANG==='en'?'Back to LINE':'LINEに戻る';
     card.insertAdjacentHTML('afterend','<button class="btn-line-close" onclick="liff.closeWindow()">'+closeLabel+'</button>');
   }
 }
-function showError(cid){var el=document.getElementById(cid);el.innerHTML='<div class="error-msg"><p>'+t('error')+'</p><button class="retry-btn" onclick="location.reload()">\u21BB Retry</button></div>'}
+function showError(cid){
+  track('api_error',{error_location:cid});
+  var el=document.getElementById(cid);
+  el.innerHTML='<div class="error-msg"><p>'+t('error')+'</p><button class="retry-btn" onclick="retryFromError(\''+cid+'\')">↻ Retry</button></div>';
+}
+function retryFromError(cid){
+  if(cid==='catGrid'){init(false)}
+  else if(cid==='calendar'){renderCalendar(calYear,calMonth)}
+  else if(cid==='timeGrid'){renderTimeSlots(state.date)}
+  else{location.reload()}
+}
 function init(isLangSwitch){
-  document.getElementById('langBtn').textContent=LANG==='en'?'\u65E5\u672C\u8A9E':'EN';
+  document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
   showLoading();
-  if(!isLangSwitch){window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'book_form_view',entry_menu:INITIAL_MENU_ID||'',entry_lang:LANG||'',has_mood_curator:!!(MOOD_CURATOR.mood||MOOD_CURATOR.menu)});}
+  if(!isLangSwitch){track('book_form_view',{entry_menu:INITIAL_MENU_ID||'',entry_lang:LANG||'',has_mood_curator:!!(MOOD_CURATOR.mood||MOOD_CURATOR.menu),source:lineUserId?'web_liff':'web'});}
   api('handleMenus',{lang:LANG}).then(function(r){
     hideLoading();allMenus=r.menus||{};
     for(var cat in state.selections){if(!allMenus[state.selections[cat]])delete state.selections[cat]}
