@@ -268,6 +268,7 @@ function api(fn, params, retryCount) {
           return api(fn, params, retryCount + 1);
         });
       }
+      try { err.retryCount = retryCount; } catch(e){}
       throw err;
     });
 }
@@ -332,6 +333,12 @@ function goBack(){
   }
 }
 function track(event,data){window.dataLayer=window.dataLayer||[];var o={event:event};if(data){Object.keys(data).forEach(function(k){o[k]=data[k]})}window.dataLayer.push(o)}
+function isJapanPhone(p){if(!p)return false;var d=String(p).replace(/[^0-9+]/g,'');return /^(\+81|0)\d{9,10}$/.test(d)}
+function getMoodCuratorData(){var mc=MOOD_CURATOR||{};if(!mc.mood&&!mc.menu&&!mc.signatureCode)return null;return {mc_mood:mc.mood||'',mc_menu:mc.menu||'',mc_addons:mc.addons||'',mc_length:mc.length||'',mc_eyebrow:mc.eyebrow||'',mc_spa:mc.spa||'',mc_scalp:mc.scalp||'',mc_cut:mc.cut||'',mc_color:mc.color||'',mc_perm:mc.perm||'',mc_texture:mc.texture||'',mc_damage:mc.damage||'',mc_signature_code:mc.signatureCode||''}}
+function getLeadDays(dateStr){if(!dateStr)return null;var p=dateStr.split('-');if(p.length!==3)return null;var today=new Date();today.setHours(0,0,0,0);var target=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));target.setHours(0,0,0,0);return Math.round((target-today)/86400000)}
+function isRepeatUser(){try{return !!localStorage.getItem('kommons_user')}catch(e){return false}}
+function getDayOfWeek(dateStr){if(!dateStr)return '';var p=dateStr.split('-');if(p.length!==3)return '';var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]}
+function buildEventPayload(extra){var p={booking_lang:LANG||'',source:lineUserId?'web_liff':'web',is_repeat_user:isRepeatUser(),has_mood_curator:!!(MOOD_CURATOR.mood||MOOD_CURATOR.menu)};if(state&&state.menuIds&&state.menuIds.length){p.menu_ids=state.menuIds.join(',');p.menu_names=menuNamesDisplay()}var mc=getMoodCuratorData();if(mc)Object.keys(mc).forEach(function(k){p[k]=mc[k]});if(extra)Object.keys(extra).forEach(function(k){p[k]=extra[k]});return p}
 function chooseLang(lang){
   LANG=lang;document.getElementById('langBtn').style.display='none';
   document.documentElement.lang=LANG==='en'?'en':'ja';
@@ -377,7 +384,7 @@ function proceedWithSelection(){
   Object.keys(state.addons).forEach(function(id){if(state.addons[id])state.menuIds.push(id);});
   if(tot.hasShampoo)state.menuIds.push('shampoo_blow');
   state.totalDuration=tot.duration;state.totalPrice=tot.price;
-  track('select_menu',{menu_ids:state.menuIds.join(','),menu_count:state.menuIds.length,value:tot.price,duration_min:tot.duration});
+  track('select_menu',buildEventPayload({menu_count:state.menuIds.length,value:tot.price,duration_min:tot.duration,is_combo:'false'}));
   monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
   renderCalendar(calYear,calMonth);goTo('date');
 }
@@ -451,7 +458,7 @@ function selectMenu(menuId,isCombo){
   if(isCombo){
     state.selections={};state.addons={};state.openCategory='';state.isCombo=true;state.menuId=menuId;state.menuIds=[menuId];
     state.totalDuration=m.duration;state.totalPrice=m.price;
-    track('select_menu',{menu_ids:menuId,menu_count:1,value:m.price,duration_min:m.duration,is_combo:'true'});
+    track('select_menu',buildEventPayload({menu_count:1,value:m.price,duration_min:m.duration,is_combo:'true'}));
     monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
     renderCalendar(calYear,calMonth);goTo('date');
   }else if(m.addon){
@@ -499,7 +506,7 @@ function buildCalendar(year,month,days){
   h+='</div>';el.innerHTML=h;
 }
 function changeMonth(delta){calMonth+=delta;if(calMonth>12){calMonth=1;calYear++}if(calMonth<1){calMonth=12;calYear--}renderCalendar(calYear,calMonth)}
-function selectDate(dateStr){state.date=dateStr;track('select_date',{booking_date:dateStr});renderTimeSlots(dateStr);goTo('time')}
+function selectDate(dateStr){state.date=dateStr;track('select_date',buildEventPayload({booking_date:dateStr,lead_days:getLeadDays(dateStr),booking_day_of_week:getDayOfWeek(dateStr),value:state.totalPrice,duration_min:state.totalDuration}));renderTimeSlots(dateStr);goTo('time')}
 function renderTimeSlots(dateStr){
   document.getElementById('timeTitle').textContent=t('selectTime');
   var parts=dateStr.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
@@ -516,7 +523,7 @@ function renderTimeSlots(dateStr){
 }
 function loadSavedUserInfo(){try{var saved=localStorage.getItem('kommons_user');if(saved){return JSON.parse(saved)}}catch(e){}return null}
 function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email}))}catch(e){}}
-function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',{booking_date:state.date,booking_time:start});var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
+function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',buildEventPayload({booking_date:state.date,booking_time:start,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),value:state.totalPrice,duration_min:state.totalDuration}));var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
 function renderMoodCuratorSummary(containerId){
   var el=document.getElementById(containerId);if(!el)return;
   var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
@@ -565,9 +572,9 @@ function submitInfo(e){
   var phone=document.getElementById('phoneInput').value.trim().replace(/[-\s　]/g,'');
   var email=document.getElementById('emailInput').value.trim();
   var notes=document.getElementById('notesInput').value.trim();
-  if(!/^[+]?\d{7,15}$/.test(phone)){document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
+  if(!/^[+]?\d{7,15}$/.test(phone)){track('book_validation_error',buildEventPayload({field:'phone',reason:'invalid_format',value_length:phone.length}));document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
   document.getElementById('phoneError').classList.remove('show');
-  state.name=name;state.phone=phone;state.email=email;state.notes=notes;track('submit_info');renderConfirmation();goTo('confirm');
+  state.name=name;state.phone=phone;state.email=email;state.notes=notes;track('book_form_submit',buildEventPayload({value:state.totalPrice,duration_min:state.totalDuration,is_japan_phone:isJapanPhone(phone),has_notes:!!notes,booking_date:state.date,booking_day_of_week:getDayOfWeek(state.date),lead_days:getLeadDays(state.date)}));renderConfirmation();goTo('confirm');
 }
 function renderConfirmation(){
   document.getElementById('confirmTitle').textContent=t('confirmBooking');
@@ -601,8 +608,8 @@ function submitBooking(){
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
   api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
-  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',{error_message:r.error});alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',{value:state.totalPrice,currency:'JPY',menu_ids:state.menuIds.join(','),duration_min:state.totalDuration,booking_lang:LANG,source:lineUserId?'web_liff':'web',transaction_id:(r&&r.booking&&r.booking.eventId)||''});renderDone();goTo('done')})
-  .catch(function(){hideLoading();btn.disabled=false;alert(t('error'))});
+  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone)}));renderDone();goTo('done')})
+  .catch(function(err){hideLoading();btn.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'))});
 }
 function renderDone(){
   document.getElementById('doneTitle').textContent=t('booked');
@@ -633,7 +640,7 @@ function retryFromError(cid){
 function init(isLangSwitch){
   document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
   showLoading();
-  if(!isLangSwitch){track('book_form_view',{entry_menu:INITIAL_MENU_ID||'',entry_lang:LANG||'',has_mood_curator:!!(MOOD_CURATOR.mood||MOOD_CURATOR.menu),source:lineUserId?'web_liff':'web'});}
+  if(!isLangSwitch){track('book_form_view',buildEventPayload({entry_menu:INITIAL_MENU_ID||'',entry_lang:LANG||''}));}
   api('handleMenus',{lang:LANG}).then(function(r){
     hideLoading();allMenus=r.menus||{};
     for(var cat in state.selections){if(!allMenus[state.selections[cat]])delete state.selections[cat]}
