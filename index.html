@@ -185,6 +185,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <input class="form-input" type="email" id="emailInput" required autocomplete="email">
       </div>
       <div class="form-group">
+        <label class="form-label" id="genderLabel"></label>
+        <select class="form-input" id="genderInput">
+          <option value=""></option>
+          <option value="male"></option>
+          <option value="female"></option>
+          <option value="other"></option>
+        </select>
+      </div>
+      <div class="form-group">
         <label class="form-label" id="notesLabel"></label>
         <textarea class="form-input" id="notesInput" rows="3"></textarea>
       </div>
@@ -285,7 +294,7 @@ function initLiff() {
     }
   }).catch(function(e) { console.log('LIFF error:', e); });
 }
-var state = {step:'',category:'',openCategory:'',selections:{},addons:{},isCombo:false,menuId:'',menuIds:[],totalDuration:0,totalPrice:0,date:'',time:'',timeEnd:'',name:'',phone:'',email:'',notes:''};
+var state = {step:'',category:'',openCategory:'',selections:{},addons:{},isCombo:false,menuId:'',menuIds:[],totalDuration:0,totalPrice:0,date:'',time:'',timeEnd:'',name:'',phone:'',email:'',notes:'',gender:''};
 var allMenus = {};
 var calYear, calMonth;
 var monthCache = {};
@@ -299,8 +308,8 @@ var CATS = [
   {id:'combo',icon:'Set',en:'Combo Menus',ja:'組み合わせメニュー'}
 ];
 var T = {
-  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7–15 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'¥',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',errorRetrying:'Connection issue. Retrying...',mapText:'📍 View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
-  ja:{selectCategory:'メニューを選んでください',selectMenu:'メニューを選んでください',selectCombo:'組み合わせメニュー',selectDate:'日付を選んでください',selectTime:'時間を選んでください',yourInfo:'お客様情報',confirmBooking:'予約内容の確認',booked:'ご予約が確定しました',bookedMsg:'ご来店をお待ちしております！',name:'お名前',phone:'電話番号',email:'メール',notes:'備考（任意）',namePh:'フルネーム',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'ご要望があれば...',phoneErr:'有効な電話番号を入力してください（7〜15桁）',next:'次へ',bookNow:'予約する',menu:'メニュー',dateTime:'日時',duration:'所要時間',price:'料金',min:'分',yen:'¥',noSlots:'この日は空きがありません',tryAnother:'別の日をお選びください',error:'エラーが発生しました。もう一度お試しください。',errorRetrying:'接続に問題があります。再試行中...',mapText:'📍 Google Mapsで見る',address:'東京都杉並区高円寺南 4-9-8 GRANDSTATUS栗原 2F Mirror A',sun:'日',mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',stepMenu:'メニュー',stepDate:'日付',stepTime:'時間',stepInfo:'情報',stepConfirm:'確認'}
+  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',gender:'Gender (optional)',genderPlaceholder:'— Select —',genderMale:'Male',genderFemale:'Female',genderOther:'Prefer not to say',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7–15 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'¥',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',errorRetrying:'Connection issue. Retrying...',mapText:'📍 View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
+  ja:{selectCategory:'メニューを選んでください',selectMenu:'メニューを選んでください',selectCombo:'組み合わせメニュー',selectDate:'日付を選んでください',selectTime:'時間を選んでください',yourInfo:'お客様情報',confirmBooking:'予約内容の確認',booked:'ご予約が確定しました',bookedMsg:'ご来店をお待ちしております！',name:'お名前',phone:'電話番号',email:'メール',notes:'備考（任意）',gender:'性別（任意）',genderPlaceholder:'— 選択 —',genderMale:'男性',genderFemale:'女性',genderOther:'回答しない',namePh:'フルネーム',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'ご要望があれば...',phoneErr:'有効な電話番号を入力してください（7〜15桁）',next:'次へ',bookNow:'予約する',menu:'メニュー',dateTime:'日時',duration:'所要時間',price:'料金',min:'分',yen:'¥',noSlots:'この日は空きがありません',tryAnother:'別の日をお選びください',error:'エラーが発生しました。もう一度お試しください。',errorRetrying:'接続に問題があります。再試行中...',mapText:'📍 Google Mapsで見る',address:'東京都杉並区高円寺南 4-9-8 GRANDSTATUS栗原 2F Mirror A',sun:'日',mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',stepMenu:'メニュー',stepDate:'日付',stepTime:'時間',stepInfo:'情報',stepConfirm:'確認'}
 };
 function t(k){return T[LANG][k]||k}
 
@@ -522,8 +531,8 @@ function renderTimeSlots(dateStr){
   }).catch(function(){hideLoading();showError('timeGrid')});
 }
 function loadSavedUserInfo(){try{var saved=localStorage.getItem('kommons_user');if(saved){return JSON.parse(saved)}}catch(e){}return null}
-function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email}))}catch(e){}}
-function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',buildEventPayload({booking_date:state.date,booking_time:start,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),value:state.totalPrice,duration_min:state.totalDuration}));var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
+function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email,gender:state.gender||''}))}catch(e){}}
+function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',buildEventPayload({booking_date:state.date,booking_time:start,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),value:state.totalPrice,duration_min:state.totalDuration}));var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.gender=saved.gender||'';state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||'';state.gender=saved.gender||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
 function renderMoodCuratorSummary(containerId){
   var el=document.getElementById(containerId);if(!el)return;
   var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
@@ -551,6 +560,12 @@ function renderInfoForm(){
   document.getElementById('phoneLabel').textContent=t('phone');
   document.getElementById('emailLabel').textContent=t('email');
   document.getElementById('notesLabel').textContent=t('notes');
+  document.getElementById('genderLabel').textContent=t('gender');
+  var gSel=document.getElementById('genderInput');
+  gSel.options[0].text=t('genderPlaceholder');
+  gSel.options[1].text=t('genderMale');
+  gSel.options[2].text=t('genderFemale');
+  gSel.options[3].text=t('genderOther');
   document.getElementById('nameInput').placeholder=t('namePh');
   document.getElementById('phoneInput').placeholder=t('phonePh');
   document.getElementById('emailInput').placeholder=t('emailPh');
@@ -560,6 +575,7 @@ function renderInfoForm(){
   document.getElementById('nameInput').value=state.name;
   document.getElementById('phoneInput').value=state.phone;
   document.getElementById('emailInput').value=state.email;
+  document.getElementById('genderInput').value=state.gender||'';
   if(!state.notes&&MOOD_CURATOR.signatureCode){
     state.notes='[Signature Code] '+MOOD_CURATOR.signatureCode;
   }
@@ -572,9 +588,10 @@ function submitInfo(e){
   var phone=document.getElementById('phoneInput').value.trim().replace(/[-\s　]/g,'');
   var email=document.getElementById('emailInput').value.trim();
   var notes=document.getElementById('notesInput').value.trim();
+  var gender=document.getElementById('genderInput').value;
   if(!/^[+]?\d{7,15}$/.test(phone)){track('book_validation_error',buildEventPayload({field:'phone',reason:'invalid_format',value_length:phone.length}));document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
   document.getElementById('phoneError').classList.remove('show');
-  state.name=name;state.phone=phone;state.email=email;state.notes=notes;track('book_form_submit',buildEventPayload({value:state.totalPrice,duration_min:state.totalDuration,is_japan_phone:isJapanPhone(phone),has_notes:!!notes,booking_date:state.date,booking_day_of_week:getDayOfWeek(state.date),lead_days:getLeadDays(state.date)}));renderConfirmation();goTo('confirm');
+  state.name=name;state.phone=phone;state.email=email;state.notes=notes;state.gender=gender;track('book_form_submit',buildEventPayload({value:state.totalPrice,duration_min:state.totalDuration,is_japan_phone:isJapanPhone(phone),has_notes:!!notes,booking_date:state.date,booking_day_of_week:getDayOfWeek(state.date),lead_days:getLeadDays(state.date)}));renderConfirmation();goTo('confirm');
 }
 function renderConfirmation(){
   document.getElementById('confirmTitle').textContent=t('confirmBooking');
@@ -607,7 +624,7 @@ function submitBooking(){
     if(MOOD_CURATOR.signatureCode)mcParts.push('Code: '+MOOD_CURATOR.signatureCode);
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
-  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
+  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
   .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone)}));renderDone();goTo('done')})
   .catch(function(err){hideLoading();btn.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'))});
 }
