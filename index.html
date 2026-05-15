@@ -233,6 +233,8 @@ var LANG = urlParams.get('lang') || '';
 if (LANG === 'jp') LANG = 'ja';
 var INITIAL_MENU_ID = (urlParams.get('menuId') || urlParams.get('menu') || '').replace(/[^a-zA-Z0-9_]/g, '');
 var LANG_FROM_URL = !!urlParams.get('lang');
+(function captureGclid(){var g=urlParams.get('gclid');if(g){try{localStorage.setItem('kommons_gclid',g);localStorage.setItem('kommons_gclid_time',String(Date.now()))}catch(e){}}})();
+function getStoredGclid(){try{var g=localStorage.getItem('kommons_gclid');var t=parseInt(localStorage.getItem('kommons_gclid_time')||'0',10);if(!g||(Date.now()-t)>90*24*60*60*1000)return '';return g}catch(e){return ''}}
 var lineUserId = '';
 var lineDisplayName = '';
 var liffReady = false;
@@ -624,7 +626,7 @@ function submitBooking(){
     if(MOOD_CURATOR.signatureCode)mcParts.push('Code: '+MOOD_CURATOR.signatureCode);
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
-  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId})
+  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:getStoredGclid()})
   .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone)}));renderDone();goTo('done')})
   .catch(function(err){hideLoading();btn.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'))});
 }
