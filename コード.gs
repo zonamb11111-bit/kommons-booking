@@ -48,6 +48,14 @@ function callClaude_(systemPrompt, userPrompt) {
   return data.content.map(function(c) { return c.text || ''; }).join('');
 }
 
+function extractJson_(text) {
+  var cleaned = text.replace(/```json|```/g, '').trim();
+  var start = cleaned.indexOf('{');
+  var end = cleaned.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) throw new Error('JSON not found in response');
+  return JSON.parse(cleaned.substring(start, end + 1));
+}
+
 function getDriveFiles_() {
   var token = ScriptApp.getOAuthToken();
   var resp = UrlFetchApp.fetch(
@@ -156,7 +164,7 @@ function checkAndDraftReviewReplies() {
     var prompt = 'Review to reply to:\nReviewer: ' + reviewer + '\nRating: ' + rating + '\nComment: ' + comment + '\n\nGenerate 3 reply options.';
     try {
       var raw = callClaude_(REVIEW_REPLY_SYSTEM, prompt);
-      var parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      var parsed = extractJson_(raw);
       var subject = '【GBPレビュー返信】' + reviewer + ' ★' + rating;
       var body = 'レビュー内容:\n' + comment + '\n\n━━━━━━━━━━━━━━━━━━━━\n\n';
       parsed.replies.forEach(function(rep) { body += '【パターン ' + rep.label + '】\n' + rep.en + '\n\n' + rep.ja + '\n\n---\n\n'; });
@@ -266,7 +274,7 @@ function createAutoPost() {
   prompt += 'Generate a GBP post.';
   try {
     var raw = callClaude_(POST_SYSTEM, prompt);
-    var parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    var parsed = extractJson_(raw);
     var postPayload = {
       languageCode: 'en',
       summary: parsed.combined || (parsed.summary_en + '\n\n' + parsed.summary_ja),
