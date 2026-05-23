@@ -36,7 +36,7 @@ function callClaude_(systemPrompt, userPrompt) {
   var response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
     method: 'post',
     headers: { 'Content-Type': 'application/json', 'x-api-key': CONFIG.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-    payload: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] }),
+    payload: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1500, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }, { role: 'assistant', content: '{' }] }),
     muteHttpExceptions: true
   });
   var code = response.getResponseCode();
@@ -45,7 +45,7 @@ function callClaude_(systemPrompt, userPrompt) {
   if (code !== 200) { Logger.log('Claude API error: ' + text.substring(0, 500)); throw new Error('Claude API returned ' + code); }
   var data = JSON.parse(text);
   if (!data.content || !Array.isArray(data.content)) throw new Error('Claude API unexpected format');
-  return data.content.map(function(c) { return c.text || ''; }).join('');
+  return '{' + data.content.map(function(c) { return c.text || ''; }).join('');
 }
 
 function extractJson_(text) {
