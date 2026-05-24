@@ -540,7 +540,13 @@ function renderTimeSlots(dateStr){
   var p={date:dateStr};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
   api('handleSlots',p).then(function(r){
     hideLoading();var container=document.getElementById('timeGrid');
-    if(!r.slots||r.slots.length===0){container.innerHTML='<div class="empty-state"><p>'+t('noSlots')+'</p><p>'+t('tryAnother')+'</p></div>';return}
+    var slotsAvailable=(r.slots&&r.slots.length)||0;
+    track('time_step_view',buildEventPayload({slots_available:slotsAvailable,booking_date:dateStr,booking_day_of_week:getDayOfWeek(dateStr),lead_days:getLeadDays(dateStr)}));
+    if(slotsAvailable===0){
+      track('no_slots_available',buildEventPayload({booking_date:dateStr,booking_day_of_week:getDayOfWeek(dateStr),lead_days:getLeadDays(dateStr)}));
+      container.innerHTML='<div class="empty-state"><p>'+t('noSlots')+'</p><p>'+t('tryAnother')+'</p></div>';
+      return;
+    }
     var h='<div class="time-grid">';r.slots.forEach(function(s){h+='<button class="time-btn" onclick="selectTime(\''+s.start+'\',\''+s.end+'\',this)">'+s.start+'</button>'});h+='</div>';container.innerHTML=h;
   }).catch(function(){hideLoading();showError('timeGrid')});
 }
@@ -619,6 +625,7 @@ function selectResidency(v){
   document.getElementById('residentBtn').classList.toggle('selected',v==='resident');
   document.getElementById('visitingBtn').classList.toggle('selected',v==='visiting');
   document.getElementById('residencyError').classList.remove('show');
+  track('select_residency',{residency:v});
 }
 function submitInfo(e){
   e.preventDefault();
@@ -678,8 +685,10 @@ function submitBooking(){
     if(MOOD_CURATOR.signatureCode)mcParts.push('Code: '+MOOD_CURATOR.signatureCode);
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
-  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:getStoredGclid()})
-  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone)}));renderDone();goTo('done')})
+  var addonIds=Object.keys(state.addons).filter(function(id){return state.addons[id];}).join(',');
+  var storedGclid=getStoredGclid();
+  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:storedGclid})
+  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();var completePayload=buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone),menu:state.menuIds.join(','),price:state.totalPrice,addons:addonIds,residency:state.residency||''});if(storedGclid)completePayload.gclid=storedGclid;track('book_complete',completePayload);renderDone();goTo('done')})
   .catch(function(err){hideLoading();btn.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'))});
 }
 function renderDone(){
