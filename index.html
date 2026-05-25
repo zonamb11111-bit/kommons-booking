@@ -15,6 +15,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="robots" content="index, follow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="canonical" href="https://hairisyoursignature.jp/booking">
+<link rel="alternate" hreflang="ja" href="https://hairisyoursignature.jp/booking?lang=ja">
+<link rel="alternate" hreflang="en" href="https://hairisyoursignature.jp/booking?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://hairisyoursignature.jp/booking">
 <meta property="og:type" content="website">
 <meta property="og:title" content="予約 — HIKARU TERADA | English speaking hair salon in Koenji, Tokyo">
 <meta property="og:description" content="高円寺の英語対応美容室。カット・カラー・パーマのオンライン予約。Book online at an English-speaking hair salon in Koenji, Tokyo.">
@@ -448,10 +451,14 @@ function getLeadDays(dateStr){if(!dateStr)return null;var p=dateStr.split('-');i
 function isRepeatUser(){try{return !!localStorage.getItem('kommons_user')}catch(e){return false}}
 function getDayOfWeek(dateStr){if(!dateStr)return '';var p=dateStr.split('-');if(p.length!==3)return '';var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]}
 function buildEventPayload(extra){var p={booking_lang:LANG||'',source:lineUserId?'web_liff':'web',is_repeat_user:isRepeatUser(),has_mood_curator:!!(MOOD_CURATOR.mood||MOOD_CURATOR.menu)};if(state&&state.menuIds&&state.menuIds.length){p.menu_ids=state.menuIds.join(',');p.menu_names=menuNamesDisplay()}var mc=getMoodCuratorData();if(mc)Object.keys(mc).forEach(function(k){p[k]=mc[k]});if(extra)Object.keys(extra).forEach(function(k){p[k]=extra[k]});return p}
+function detectBrowserLang(){
+  try{var bl=(navigator.language||navigator.userLanguage||'').toLowerCase();return bl.startsWith('ja')?'ja':'en'}catch(e){return 'ja'}
+}
 function chooseLang(lang){
-  LANG=lang;document.getElementById('langBtn').style.display='none';
+  LANG=lang;
   document.documentElement.lang=LANG==='en'?'en':'ja';
-  track('select_language',{language:lang});
+  document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
+  track('select_language',{language:lang,source:'manual'});
   init(false);
 }
 function toggleLang(){
@@ -802,10 +809,12 @@ function init(isLangSwitch){
 function startApp() {
   if (LANG_FROM_URL || INITIAL_MENU_ID) {
     if (!LANG) LANG = 'ja';
-    init(false);
   } else {
-    goTo('lang');
+    LANG = detectBrowserLang();
   }
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'ja';
+  document.getElementById('langBtn').textContent = LANG === 'en' ? '日本語' : 'EN';
+  init(false);
 }
 startApp();
 initLiff();
