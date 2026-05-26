@@ -223,6 +223,10 @@ textarea.form-input{resize:vertical;min-height:60px}
 *:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 .cal-download{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:12px 24px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;text-decoration:none;transition:all 0.15s}
 .cal-download:hover,.cal-download:active{border-color:var(--accent);color:var(--accent)}
+.residency-row{display:flex;gap:10px;margin-top:6px}
+.residency-btn{flex:1;padding:14px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);font-size:14px;cursor:pointer;font-family:inherit;text-align:center;transition:all 0.15s ease;line-height:1.3;color:var(--text)}
+.residency-btn:active{transform:scale(0.98)}
+.residency-btn.selected{border-color:var(--accent);background:#faf7f3;border-left:3px solid var(--accent);font-weight:600}
 
 </style>
 </head>
@@ -281,13 +285,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>
         <input class="form-input" type="text" id="nameInput" required autocomplete="name" aria-required="true">
       </div>
       <div class="form-group">
-        <label class="form-label" for="phoneInput"><span id="phoneLabel"></span><span class="req">*</span></label>
-        <input class="form-input" type="tel" id="phoneInput" required autocomplete="tel" aria-required="true" aria-describedby="phoneError">
+        <label class="form-label" for="phoneInput"><span id="phoneLabel"></span><span class="req" id="phoneReq">*</span></label>
+        <input class="form-input" type="tel" id="phoneInput" autocomplete="tel" aria-describedby="phoneError">
         <div class="form-error" id="phoneError" role="alert"></div>
       </div>
       <div class="form-group">
         <label class="form-label" for="emailInput"><span id="emailLabel"></span><span class="req">*</span></label>
         <input class="form-input" type="email" id="emailInput" required autocomplete="email" aria-required="true">
+      </div>
+      <div class="form-group" id="residencyGroup" style="display:none">
+        <label class="form-label"><span id="residencyLabel"></span><span class="req">*</span></label>
+        <div class="residency-row">
+          <button type="button" class="residency-btn" id="residentBtn" onclick="selectResidency('resident')"></button>
+          <button type="button" class="residency-btn" id="visitingBtn" onclick="selectResidency('visiting')"></button>
+        </div>
+        <div class="form-error" id="residencyError"></div>
       </div>
       <div class="form-group">
         <label class="form-label" id="genderLabel"></label>
@@ -408,7 +420,7 @@ function initLiff() {
     }
   }).catch(function(e) { console.log('LIFF error:', e); });
 }
-var state = {step:'',category:'',openCategory:'',selections:{},addons:{},isCombo:false,menuId:'',menuIds:[],totalDuration:0,totalPrice:0,date:'',time:'',timeEnd:'',name:'',phone:'',email:'',notes:'',gender:''};
+var state = {step:'',category:'',openCategory:'',selections:{},addons:{},isCombo:false,menuId:'',menuIds:[],totalDuration:0,totalPrice:0,date:'',time:'',timeEnd:'',name:'',phone:'',email:'',notes:'',gender:'',residency:''};
 var allMenus = {};
 var calYear, calMonth;
 var monthCache = {};
@@ -422,8 +434,8 @@ var CATS = [
   {id:'combo',icon:'Set',en:'Combo Menus',ja:'組み合わせメニュー'}
 ];
 var T = {
-  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone',email:'Email',notes:'Notes (optional)',gender:'Gender (optional)',genderPlaceholder:'— Select —',genderMale:'Male',genderFemale:'Female',genderOther:'Prefer not to say',namePh:'Your full name',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7–15 digits)',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'¥',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',errorRetrying:'Connection issue. Retrying...',mapText:'📍 View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
-  ja:{selectCategory:'メニューを選んでください',selectMenu:'メニューを選んでください',selectCombo:'組み合わせメニュー',selectDate:'日付を選んでください',selectTime:'時間を選んでください',yourInfo:'お客様情報',confirmBooking:'予約内容の確認',booked:'ご予約が確定しました',bookedMsg:'ご来店をお待ちしております！',name:'お名前',phone:'電話番号',email:'メール',notes:'備考（任意）',gender:'性別（任意）',genderPlaceholder:'— 選択 —',genderMale:'男性',genderFemale:'女性',genderOther:'回答しない',namePh:'フルネーム',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'ご要望があれば...',phoneErr:'有効な電話番号を入力してください（7〜15桁）',next:'次へ',bookNow:'予約する',menu:'メニュー',dateTime:'日時',duration:'所要時間',price:'料金',min:'分',yen:'¥',noSlots:'この日は空きがありません',tryAnother:'別の日をお選びください',error:'エラーが発生しました。もう一度お試しください。',errorRetrying:'接続に問題があります。再試行中...',mapText:'📍 Google Mapsで見る',address:'東京都杉並区高円寺南 4-9-8 GRANDSTATUS栗原 2F Mirror A',sun:'日',mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',stepMenu:'メニュー',stepDate:'日付',stepTime:'時間',stepInfo:'情報',stepConfirm:'確認'}
+  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone (optional)',email:'Email',notes:'Notes (optional)',gender:'Gender (optional)',genderPlaceholder:'— Select —',genderMale:'Male',genderFemale:'Female',genderOther:'Prefer not to say',namePh:'Your full name',phonePh:'090-1234-5678 (optional)',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7–15 digits)',residency:'Are you...',residencyResident:'🇯🇵 Living in Japan',residencyVisiting:'✈️ Visiting Tokyo',residencyErr:'Please select an option',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'¥',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',errorRetrying:'Connection issue. Retrying...',mapText:'📍 View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
+  ja:{selectCategory:'メニューを選んでください',selectMenu:'メニューを選んでください',selectCombo:'組み合わせメニュー',selectDate:'日付を選んでください',selectTime:'時間を選んでください',yourInfo:'お客様情報',confirmBooking:'予約内容の確認',booked:'ご予約が確定しました',bookedMsg:'ご来店をお待ちしております！',name:'お名前',phone:'電話番号',email:'メール',notes:'備考（任意）',gender:'性別（任意）',genderPlaceholder:'— 選択 —',genderMale:'男性',genderFemale:'女性',genderOther:'回答しない',namePh:'フルネーム',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'ご要望があれば...',phoneErr:'有効な電話番号を入力してください（7〜15桁）',residency:'',residencyResident:'',residencyVisiting:'',residencyErr:'',next:'次へ',bookNow:'予約する',menu:'メニュー',dateTime:'日時',duration:'所要時間',price:'料金',min:'分',yen:'¥',noSlots:'この日は空きがありません',tryAnother:'別の日をお選びください',error:'エラーが発生しました。もう一度お試しください。',errorRetrying:'接続に問題があります。再試行中...',mapText:'📍 Google Mapsで見る',address:'東京都杉並区高円寺南 4-9-8 GRANDSTATUS栗原 2F Mirror A',sun:'日',mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',stepMenu:'メニュー',stepDate:'日付',stepTime:'時間',stepInfo:'情報',stepConfirm:'確認'}
 };
 function t(k){return T[LANG][k]||k}
 
@@ -646,13 +658,19 @@ function renderTimeSlots(dateStr){
   var p={date:dateStr};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
   api('handleSlots',p).then(function(r){
     hideLoading();var container=document.getElementById('timeGrid');
-    if(!r.slots||r.slots.length===0){container.innerHTML='<div class="empty-state"><p>'+t('noSlots')+'</p><p>'+t('tryAnother')+'</p></div>';return}
+    var slotsAvailable=(r.slots&&r.slots.length)||0;
+    track('time_step_view',buildEventPayload({slots_available:slotsAvailable,booking_date:dateStr,booking_day_of_week:getDayOfWeek(dateStr),lead_days:getLeadDays(dateStr)}));
+    if(slotsAvailable===0){
+      track('no_slots_available',buildEventPayload({booking_date:dateStr,booking_day_of_week:getDayOfWeek(dateStr),lead_days:getLeadDays(dateStr)}));
+      container.innerHTML='<div class="empty-state"><p>'+t('noSlots')+'</p><p>'+t('tryAnother')+'</p></div>';
+      return;
+    }
     var h='<div class="time-grid">';r.slots.forEach(function(s){h+='<button class="time-btn" onclick="selectTime(\''+s.start+'\',\''+s.end+'\',this)">'+s.start+'</button>'});h+='</div>';container.innerHTML=h;
   }).catch(function(){hideLoading();showError('timeGrid')});
 }
 function loadSavedUserInfo(){try{var saved=localStorage.getItem('kommons_user');if(saved){return JSON.parse(saved)}}catch(e){}return null}
 function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email,gender:state.gender||''}))}catch(e){}}
-function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',buildEventPayload({booking_date:state.date,booking_time:start,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),value:state.totalPrice,duration_min:state.totalDuration}));var saved=loadSavedUserInfo();if(saved&&saved.name&&saved.phone&&saved.email){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.gender=saved.gender||'';state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||'';state.gender=saved.gender||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
+function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;track('select_time',buildEventPayload({booking_date:state.date,booking_time:start,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),value:state.totalPrice,duration_min:state.totalDuration}));var saved=loadSavedUserInfo();var isEn=LANG==='en';if(saved&&saved.name&&saved.phone&&saved.email&&!isEn){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.gender=saved.gender||'';state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||lineDisplayName||'';state.phone=saved.phone||'';state.email=saved.email||'';state.gender=saved.gender||''}else if(lineDisplayName){state.name=lineDisplayName}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
 function renderMoodCuratorSummary(containerId){
   var el=document.getElementById(containerId);if(!el)return;
   var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
@@ -696,11 +714,36 @@ function renderInfoForm(){
   document.getElementById('phoneInput').value=state.phone;
   document.getElementById('emailInput').value=state.email;
   document.getElementById('genderInput').value=state.gender||'';
+  var isEn=LANG==='en';
+  var phoneInput=document.getElementById('phoneInput');
+  var phoneReq=document.getElementById('phoneReq');
+  if(isEn){phoneReq.style.display='none';phoneInput.removeAttribute('required');}
+  else{phoneReq.style.display='';phoneInput.setAttribute('required','required');}
+  var resGroup=document.getElementById('residencyGroup');
+  if(isEn){
+    resGroup.style.display='';
+    document.getElementById('residencyLabel').textContent=t('residency');
+    document.getElementById('residentBtn').textContent=t('residencyResident');
+    document.getElementById('visitingBtn').textContent=t('residencyVisiting');
+    document.getElementById('residencyError').textContent=t('residencyErr');
+    document.getElementById('residencyError').classList.remove('show');
+    document.getElementById('residentBtn').classList.toggle('selected',state.residency==='resident');
+    document.getElementById('visitingBtn').classList.toggle('selected',state.residency==='visiting');
+  }else{
+    resGroup.style.display='none';
+  }
   if(!state.notes&&MOOD_CURATOR.signatureCode){
     state.notes='[Signature Code] '+MOOD_CURATOR.signatureCode;
   }
   document.getElementById('notesInput').value=state.notes;
   renderMoodCuratorSummary('infoMoodSummary');
+}
+function selectResidency(v){
+  state.residency=v;
+  document.getElementById('residentBtn').classList.toggle('selected',v==='resident');
+  document.getElementById('visitingBtn').classList.toggle('selected',v==='visiting');
+  document.getElementById('residencyError').classList.remove('show');
+  track('select_residency',{residency:v});
 }
 function submitInfo(e){
   e.preventDefault();
@@ -709,9 +752,20 @@ function submitInfo(e){
   var email=document.getElementById('emailInput').value.trim();
   var notes=document.getElementById('notesInput').value.trim().replace(/[<>]/g,'').substring(0,500);
   var gender=document.getElementById('genderInput').value;
-  if(!/^[+]?\d{7,15}$/.test(phone)){track('book_validation_error',buildEventPayload({field:'phone',reason:'invalid_format',value_length:phone.length}));document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
+  var isEn=LANG==='en';
+  var phoneRequired=!isEn;
+  if(phoneRequired||phone){
+    if(!/^[+]?\d{7,15}$/.test(phone)){track('book_validation_error',buildEventPayload({field:'phone',reason:'invalid_format',value_length:phone.length}));document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
+  }
   document.getElementById('phoneError').classList.remove('show');
-  state.name=name;state.phone=phone;state.email=email;state.notes=notes;state.gender=gender;track('book_form_submit',buildEventPayload({value:state.totalPrice,duration_min:state.totalDuration,is_japan_phone:isJapanPhone(phone),has_notes:!!notes,booking_date:state.date,booking_day_of_week:getDayOfWeek(state.date),lead_days:getLeadDays(state.date)}));renderConfirmation();goTo('confirm');
+  if(isEn&&!state.residency){
+    track('book_validation_error',buildEventPayload({field:'residency',reason:'not_selected'}));
+    var resErr=document.getElementById('residencyError');
+    resErr.classList.add('show');
+    resErr.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  state.name=name;state.phone=phone;state.email=email;state.notes=notes;state.gender=gender;track('book_form_submit',buildEventPayload({value:state.totalPrice,duration_min:state.totalDuration,is_japan_phone:isJapanPhone(phone),has_notes:!!notes,booking_date:state.date,booking_day_of_week:getDayOfWeek(state.date),lead_days:getLeadDays(state.date),residency:state.residency||''}));renderConfirmation();goTo('confirm');
 }
 function renderConfirmation(){
   document.getElementById('confirmTitle').textContent=t('confirmBooking');
@@ -728,6 +782,11 @@ function renderConfirmation(){
 function submitBooking(){
   var btn=document.getElementById('bookBtn');btn.disabled=true;showLoading();
   var bookNotes=state.notes;
+  if(LANG==='en'&&state.residency==='resident'){
+    bookNotes=bookNotes?('[Resident] '+bookNotes):'[Resident]';
+  }else if(LANG==='en'&&state.residency==='visiting'){
+    bookNotes=bookNotes?('[Visiting] '+bookNotes):'[Visiting]';
+  }
   if(MOOD_CURATOR&&MOOD_CURATOR.mood){
     var mcParts=['[Mood Curator]','Mood: '+MOOD_CURATOR.mood];
     if(MOOD_CURATOR.length)mcParts.push('Length: '+MOOD_CURATOR.length);
@@ -744,8 +803,10 @@ function submitBooking(){
     if(MOOD_CURATOR.signatureCode)mcParts.push('Code: '+MOOD_CURATOR.signatureCode);
     bookNotes=bookNotes?(bookNotes+'\n'+mcParts.join('\n')):mcParts.join('\n');
   }
-  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:getStoredGclid()})
-  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();track('book_complete',buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone)}));renderDone();goTo('done')})
+  var addonIds=Object.keys(state.addons).filter(function(id){return state.addons[id];}).join(',');
+  var storedGclid=getStoredGclid();
+  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:storedGclid})
+  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();var completePayload=buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone),menu:state.menuIds.join(','),price:state.totalPrice,addons:addonIds,residency:state.residency||''});if(storedGclid)completePayload.gclid=storedGclid;track('book_complete',completePayload);renderDone();goTo('done')})
   .catch(function(err){hideLoading();btn.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'))});
 }
 function generateICS(){
