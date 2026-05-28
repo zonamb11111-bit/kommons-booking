@@ -11,10 +11,13 @@ compatibility_date = "2025-05-01"
 
 # 静的アセット：リポジトリ直下を配信ディレクトリにする。
 # .assetsignore で .gs / .sh / *.md / src/ / wrangler.toml 等を除外。
+# run_worker_first = true ：アセット直返しではなく必ず Worker を経由させる
+#   （src/index.js で CSP 等のセキュリティヘッダーを焼き込むため）。
 [assets]
 directory = "./"
 binding = "ASSETS"
 not_found_handling = "404-page"
+run_worker_first = true
 
 # カスタムドメインは Cloudflare ダッシュボードから手動紐付け（一度だけ）。
 # Workers & Pages → kommons-booking → Settings → Triggers → Custom Domains → Add Custom Domain
