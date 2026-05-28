@@ -14,9 +14,10 @@ const CSP_DIRECTIVES = [
   "script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.googleadservices.com https://googleads.g.doubleclick.net https://static.line-scdn.net https://*.line.me",
   "script-src-elem 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.googleadservices.com https://googleads.g.doubleclick.net https://static.line-scdn.net https://*.line.me",
   // 予約API（GAS）・GA4ビーコン・GTM/Google Ads通信（ccm/collect・rmkt/collect 等）・LINE LIFF認証
-  "connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.google.com https://*.g.doubleclick.net https://*.line.me",
-  // OG画像・favicon・GA4ピクセル・Google Ads ピクセル・LINEプロフィール画像（liff.getProfile）
-  "img-src 'self' data: https://*.googletagmanager.com https://*.google-analytics.com https://*.g.doubleclick.net https://*.google.com https://*.line-scdn.net",
+  // 日本IPからの Google広告は google.co.jp 側を叩くため両方許可
+  "connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.google.com https://*.google.co.jp https://*.g.doubleclick.net https://*.line.me",
+  // OG画像・favicon・GA4ピクセル・Google Ads ピクセル（1p-user-list等 google.co.jp 配信）・LINEプロフィール画像
+  "img-src 'self' data: https://*.googletagmanager.com https://*.google-analytics.com https://*.g.doubleclick.net https://*.google.com https://*.google.co.jp https://*.line-scdn.net",
   // インラインstyle（index.html内の<style>大量）
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
