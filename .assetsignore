@@ -1,6 +1,16 @@
 # Workers Static Assets から除外するファイル群
 # https://developers.cloudflare.com/workers/static-assets/binding/#assetsignore
 
+# Node 依存（wrangler等は dev tool で配信不要・1ファイル100MB+の workerd を含む）
+node_modules/
+package.json
+package-lock.json
+
+# Wrangler ローカル状態
+.wrangler/
+.dev.vars
+.env
+
 # Workers 設定・コード本体（配信不要）
 src/
 wrangler.toml
