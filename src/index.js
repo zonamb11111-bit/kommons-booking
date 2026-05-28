@@ -10,18 +10,18 @@
 
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  // GTM スニペット（インライン）＋ GTM本体・LINE LIFF SDK
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://static.line-scdn.net https://*.line.me",
-  "script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://static.line-scdn.net https://*.line.me",
-  // 予約API（GAS）・GA4ビーコン・GTM通信・LINE LIFF認証
-  "connect-src 'self' https://script.google.com https://script.googleusercontent.com https://www.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.line.me",
-  // OG画像・favicon・GA4ピクセル・LINEプロフィール画像（liff.getProfile）
-  "img-src 'self' data: https://www.googletagmanager.com https://*.google-analytics.com https://*.line-scdn.net",
+  // GTMスニペット（インライン）＋ GTM本体・Google Ads（コンバージョン/リマケ）・LINE LIFF SDK
+  "script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.googleadservices.com https://googleads.g.doubleclick.net https://static.line-scdn.net https://*.line.me",
+  "script-src-elem 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.googleadservices.com https://googleads.g.doubleclick.net https://static.line-scdn.net https://*.line.me",
+  // 予約API（GAS）・GA4ビーコン・GTM/Google Ads通信（ccm/collect・rmkt/collect 等）・LINE LIFF認証
+  "connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.google.com https://*.g.doubleclick.net https://*.line.me",
+  // OG画像・favicon・GA4ピクセル・Google Ads ピクセル・LINEプロフィール画像（liff.getProfile）
+  "img-src 'self' data: https://*.googletagmanager.com https://*.google-analytics.com https://*.g.doubleclick.net https://*.google.com https://*.line-scdn.net",
   // インラインstyle（index.html内の<style>大量）
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
-  // GTM noscript用iframe・LINE LIFF認証画面
-  "frame-src https://www.googletagmanager.com https://*.line.me",
+  // GTM noscript用iframe・Google Ads iframe・LINE LIFF認証画面
+  "frame-src https://*.googletagmanager.com https://*.doubleclick.net https://*.line.me",
   "object-src 'none'",
   "base-uri 'self'",
   // フォームsubmitは同一オリジン（実体はfetchで送るのでform actionは未使用）＋念のためGAS
