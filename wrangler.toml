@@ -1,0 +1,22 @@
+# kommons-booking — Cloudflare Workers config
+#
+# 役割：予約フォームをCloudflare Workersから配信し、CSP等のHTTPセキュリティヘッダーを
+# レスポンスに焼き込む。静的アセット（index.html / 画像 / アイコン）は env.ASSETS 経由で配信。
+#
+# デプロイ：`npx wrangler deploy`（要 `wrangler login` 1回）
+
+name = "kommons-booking"
+main = "src/index.js"
+compatibility_date = "2025-05-01"
+
+# 静的アセット：リポジトリ直下を配信ディレクトリにする。
+# .assetsignore で .gs / .sh / *.md / src/ / wrangler.toml 等を除外。
+[assets]
+directory = "./"
+binding = "ASSETS"
+not_found_handling = "404-page"
+
+# カスタムドメインは Cloudflare ダッシュボードから手動紐付け（一度だけ）。
+# Workers & Pages → kommons-booking → Settings → Triggers → Custom Domains → Add Custom Domain
+#   → hairisyoursignature.jp
+#   → www.hairisyoursignature.jp（任意・wwwも同サイトに飛ばす場合）

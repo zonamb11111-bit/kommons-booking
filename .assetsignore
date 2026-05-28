@@ -1,0 +1,23 @@
+# Workers Static Assets から除外するファイル群
+# https://developers.cloudflare.com/workers/static-assets/binding/#assetsignore
+
+# Workers 設定・コード本体（配信不要）
+src/
+wrangler.toml
+.assetsignore
+
+# Git 関連
+.git/
+.gitignore
+
+# GAS スクリプト（リポジトリ同居だがWeb配信対象外）
+*.gs
+
+# シェルスクリプト・ドキュメント
+*.sh
+*.md
+
+# OS / バックアップ
+.DS_Store
+*.bak
+*.bak_*
