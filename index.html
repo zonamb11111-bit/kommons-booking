@@ -232,6 +232,17 @@ textarea.form-input{resize:vertical;min-height:60px}
 .residency-btn{flex:1;padding:14px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);font-size:14px;cursor:pointer;font-family:inherit;text-align:center;transition:all 0.15s ease;line-height:1.3;color:var(--text)}
 .residency-btn:active{transform:scale(0.98)}
 .residency-btn.selected{border-color:var(--accent);background:#faf7f3;border-left:3px solid var(--accent);font-weight:600}
+.dep-notice{font-size:13px;color:var(--accent);background:#faf7f3;border:1px solid #ece3d6;border-radius:10px;padding:10px 14px;margin-bottom:14px;line-height:1.45}
+.dep-policy{background:#faf8f5;border:1px solid var(--border);border-radius:12px;padding:16px;margin:4px 0 14px}
+.dep-policy-h{font-weight:600;font-size:15px;margin-bottom:6px}
+.dep-policy p{font-size:13px;color:var(--text2);margin-bottom:8px}
+.dep-policy ul{margin:0;padding-left:18px}
+.dep-policy li{font-size:13px;color:var(--text2);margin-bottom:6px;line-height:1.5}
+.dep-amount{font-size:15px;margin:0 2px 12px}
+.dep-card{min-height:44px;margin-bottom:6px}
+.dep-card-err{font-size:12px;color:var(--error);min-height:16px;margin-bottom:8px}
+.dep-consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text);line-height:1.45;margin-bottom:6px;cursor:pointer}
+.dep-consent input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--accent)}
 
 </style>
 </head>
@@ -278,6 +289,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>
     <button class="btn-back" onclick="goBack()">&larr;</button>
     <h2 class="step-title" id="timeTitle"></h2>
     <div class="selected-info" id="selectedDateInfo"></div>
+    <div id="depositNotice" class="dep-notice" style="display:none"></div>
     <div id="timeGrid"></div>
   </section>
   <section id="step-info" class="step">
@@ -327,6 +339,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>
     <h2 class="step-title" id="confirmTitle"></h2>
     <div class="confirm-card" id="confirmCard"></div>
     <div id="confirmMoodSummary"></div>
+    <div id="depositBlock"></div>
     <button class="btn-primary" id="bookBtn" onclick="submitBooking()"></button>
   </section>
   <section id="step-done" class="step">
@@ -355,7 +368,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>
 <script>
 var GAS_API = 'https://script.google.com/macros/s/AKfycbyJkyjUM2x9Eiv0AwvtUMi0Syx34jrppeglnXAOVVeVNxGDwDaHhqar255O4rpEqPCj1Q/exec';
 var LIFF_ID = '2009555220-HXbJBLAX';
-var API_MAP = {handleMenus:'menus',handleSlots:'slots',handleDays:'days',handleBook:'book'};
+var API_MAP = {handleMenus:'menus',handleSlots:'slots',handleDays:'days',handleBook:'book',handleCheckDeposit:'checkdeposit'};
 var urlParams = new URLSearchParams(window.location.search);
 var LANG = urlParams.get('lang') || '';
 if (LANG === 'jp') LANG = 'ja';
@@ -659,6 +672,7 @@ function renderTimeSlots(dateStr){
   var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
   var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
   document.getElementById('selectedDateInfo').textContent=menuNamesDisplay()+' · '+dateLabel;
+  refreshDepositNotice();
   showLoading();
   var p={date:dateStr};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
   api('handleSlots',p).then(function(r){
@@ -783,8 +797,104 @@ function renderConfirmation(){
   var editLink='<div style="text-align:right;margin-top:4px"><a href="#" onclick="state.infoSkipped=false;renderInfoForm();goTo(\'info\');return false" style="font-size:12px;color:var(--accent);text-decoration:none">'+(LANG==='en'?'Edit info ✎':'情報を編集 ✎')+'</a></div>';
   card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'〜'+state.timeEnd)+cRow(t('duration'),state.totalDuration+t('min'))+cRow(t('price'),t('yen')+state.totalPrice.toLocaleString())+'<div style="border-top:2px solid #f0ede8;margin:8px 0"></div>'+cRow(t('name'),state.name)+cRow(t('phone'),state.phone)+cRow(t('email'),state.email)+(state.notes?cRow(t('notes'),state.notes):'')+editLink;
   renderMoodCuratorSummary('confirmMoodSummary');
+  maybeSetupDeposit();
 }
+/* ── Deposit (Square) ── EN×初回×180分+ のみ・GAS の DEPOSIT_ENFORCE=on の時だけサーバーが要求する。
+   off の間は checkdeposit が常に depositRequired:false を返す＝このブロックは一切UIを出さず従来通り。
+   キー値（applicationId/locationId/env）はハードコードせず checkdeposit 応答から受け取る。 */
+var DEPOSIT={required:false,amount:0,square:null,payments:null,card:null,consent:false,previewKey:'',previewRequired:false};
+var SQUARE_SDK={};
+function squareSdkUrl(env){return env==='production'?'https://web.squarecdn.com/v1/square.js':'https://sandbox.web.squarecdn.com/v1/square.js';}
+function loadSquareSdk(env){
+  if(window.Square)return Promise.resolve();
+  if(SQUARE_SDK[env])return SQUARE_SDK[env];
+  SQUARE_SDK[env]=new Promise(function(resolve,reject){
+    var s=document.createElement('script');s.src=squareSdkUrl(env);s.async=true;
+    s.onload=function(){resolve();};
+    s.onerror=function(){SQUARE_SDK[env]=null;reject(new Error('Square SDK load failed'));};
+    document.head.appendChild(s);
+  });
+  return SQUARE_SDK[env];
+}
+function fmtYen(n){return '¥'+Number(n).toLocaleString();}
+function clearDepositUI(){
+  DEPOSIT.required=false;DEPOSIT.amount=0;DEPOSIT.consent=false;DEPOSIT.square=null;
+  if(DEPOSIT.card){try{DEPOSIT.card.destroy();}catch(e){}DEPOSIT.card=null;}
+  var blk=document.getElementById('depositBlock');if(blk)blk.innerHTML='';
+}
+/* 先出し予告(B)。EN×180分+ のときだけ checkdeposit を1回プレビュー（メール/電話なし＝サーバーは初回扱い）。
+   enforce=off なら false が返り予告は出ない＝「課金しないのに予告だけ出る」を防ぐ。結果はメニュー集合ごとにキャッシュ。 */
+function refreshDepositNotice(){
+  var dn=document.getElementById('depositNotice');if(!dn)return;
+  var key=LANG+'|'+(state.menuIds?state.menuIds.join(','):'');
+  function paint(){dn.style.display=DEPOSIT.previewRequired?'':'none';if(DEPOSIT.previewRequired){dn.textContent='First visits to longer services (3 hrs+) ask for a 50% deposit to hold the slot. It goes toward your service on the day.';}}
+  if(LANG!=='en'||state.totalDuration<180){DEPOSIT.previewRequired=false;DEPOSIT.previewKey=key;dn.style.display='none';return;}
+  if(DEPOSIT.previewKey===key){paint();return;}
+  DEPOSIT.previewKey=key;DEPOSIT.previewRequired=false;dn.style.display='none';
+  api('handleCheckDeposit',{lang:LANG,source:(lineUserId?'web_liff':'web'),menuIds:state.menuIds.join(',')})
+  .then(function(r){if(DEPOSIT.previewKey!==key)return;DEPOSIT.previewRequired=!!(r&&r.depositRequired);paint();})
+  .catch(function(){});
+}
+/* 確認画面に入るたびに呼ぶ。EN×180分+ 以外はサーバーも必ず false なので問い合わせしない＝従来フロー無傷。 */
+function maybeSetupDeposit(){
+  clearDepositUI();
+  var btn=document.getElementById('bookBtn');
+  if(LANG!=='en'||state.totalDuration<180){btn.disabled=false;btn.textContent=t('bookNow');return;}
+  btn.disabled=true; // 判定が返るまで誤タップ防止
+  api('handleCheckDeposit',{lang:LANG,source:(lineUserId?'web_liff':'web'),menuIds:state.menuIds.join(','),email:state.email,phone:state.phone,lineUserId:lineUserId})
+  .then(function(r){
+    if(r&&r.depositRequired&&r.square){applyDepositUI(r);}
+    else{var b=document.getElementById('bookBtn');b.disabled=false;b.textContent=t('bookNow');}
+  })
+  .catch(function(){ // フェイルオープン：判定が取れなければ通常導線（book側の安全網が最終判定）
+    clearDepositUI();var b=document.getElementById('bookBtn');b.disabled=false;b.textContent=t('bookNow');
+  });
+}
+function applyDepositUI(r){
+  DEPOSIT.required=true;DEPOSIT.amount=r.depositAmount;DEPOSIT.square=r.square;DEPOSIT.consent=false;
+  var amt=fmtYen(r.depositAmount);
+  document.getElementById('depositBlock').innerHTML=
+    '<div class="dep-policy"><div class="dep-policy-h">A note on cancellations</div>'
+    +'<p>Every appointment is one-on-one, so your booking holds that whole time for you alone.</p>'
+    +'<ul><li>Free to cancel or change up to the day before — please tell us as early as you can.</li>'
+    +'<li>For a first visit with a longer service (color, or 3+ hours), a 50% deposit secures the booking and goes toward your service on the day. It is non-refundable for same-day cancellations or no-shows.</li></ul></div>'
+    +'<div class="dep-amount">Deposit (50%): <strong>'+escHtml(amt)+'</strong> — applied to your service today.</div>'
+    +'<div id="card-container" class="dep-card"></div>'
+    +'<div class="dep-card-err" id="depCardErr"></div>'
+    +'<label class="dep-consent"><input type="checkbox" id="depConsent" onchange="onDepConsent()"><span>I understand the 50% deposit is non-refundable for same-day cancellations or no-shows, and goes toward my service on the day.</span></label>';
+  var btn=document.getElementById('bookBtn');btn.textContent='Pay '+amt+' deposit & confirm booking';btn.disabled=true;
+  loadSquareSdk(r.square.env).then(function(){
+    DEPOSIT.payments=window.Square.payments(r.square.applicationId,r.square.locationId);
+    return DEPOSIT.payments.card();
+  }).then(function(card){
+    DEPOSIT.card=card;return card.attach('#card-container');
+  }).then(function(){updateDepositSubmitState();})
+  .catch(function(){var e=document.getElementById('depCardErr');if(e){e.textContent='Card form could not load. Please reload the page and try again.';}});
+}
+function onDepConsent(){DEPOSIT.consent=!!document.getElementById('depConsent').checked;updateDepositSubmitState();}
+function updateDepositSubmitState(){document.getElementById('bookBtn').disabled=!(DEPOSIT.required&&DEPOSIT.consent&&DEPOSIT.card);}
+
 function submitBooking(){
+  if(DEPOSIT.required){
+    if(!DEPOSIT.consent||!DEPOSIT.card){updateDepositSubmitState();return;}
+    var btn0=document.getElementById('bookBtn');btn0.disabled=true;showLoading();
+    DEPOSIT.card.tokenize().then(function(res){
+      if(res&&res.status==='OK'){doBook(res.token);}
+      else{
+        hideLoading();btn0.disabled=false;
+        var msg=(res&&res.errors&&res.errors[0]&&res.errors[0].message)||"Your card couldn't be processed. Please check the details and try again.";
+        var ec=document.getElementById('depCardErr');if(ec)ec.textContent=msg;
+        track('deposit_tokenize_error',buildEventPayload({reason:msg}));
+      }
+    }).catch(function(){
+      hideLoading();var b=document.getElementById('bookBtn');b.disabled=false;
+      var ec=document.getElementById('depCardErr');if(ec)ec.textContent="Your card couldn't be processed. Please try another card.";
+    });
+  }else{
+    doBook('');
+  }
+}
+function doBook(depositToken){
   var btn=document.getElementById('bookBtn');btn.disabled=true;showLoading();
   var bookNotes=state.notes;
   if(LANG==='en'&&state.residency==='resident'){
@@ -810,9 +920,31 @@ function submitBooking(){
   }
   var addonIds=Object.keys(state.addons).filter(function(id){return state.addons[id];}).join(',');
   var storedGclid=getStoredGclid();
-  api('handleBook',{menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:storedGclid})
-  .then(function(r){hideLoading();if(r.error){btn.disabled=false;track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));alert(r.error);if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date')}return}saveUserInfo();var completePayload=buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone),menu:state.menuIds.join(','),price:state.totalPrice,addons:addonIds,residency:state.residency||''});if(storedGclid)completePayload.gclid=storedGclid;track('book_complete',completePayload);renderDone();goTo('done')})
-  .catch(function(err){hideLoading();btn.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'))});
+  var bookParams={menuIds:state.menuIds.join(','),date:state.date,time:state.time,name:state.name,phone:state.phone,email:state.email,notes:bookNotes,gender:state.gender||'',lang:LANG,source:lineUserId?'web_liff':'web',lineUserId:lineUserId,gclid:storedGclid};
+  if(depositToken)bookParams.depositToken=depositToken;
+  api('handleBook',bookParams)
+  .then(function(r){
+    hideLoading();
+    if(r.error){
+      var btn2=document.getElementById('bookBtn');btn2.disabled=false;
+      // 安全網：サーバーがデポジット必須と判断したのにトークン無し（race/フェイルオープン経由）→ カード入力を開く
+      if(r.error==='deposit_required'){track('book_error',buildEventPayload({error_message:'deposit_required',error_source:'api_business'}));maybeSetupDeposit();var db=document.getElementById('depositBlock');if(db)db.scrollIntoView({behavior:'smooth',block:'center'});return;}
+      // 課金失敗 → トークンは使い切りなので再入力させる（次回 submit で tokenize し直す）
+      if(DEPOSIT.required&&(r.error.indexOf('could not be processed')>=0||r.error.indexOf('決済ができ')>=0)){track('deposit_charge_error',buildEventPayload({error_message:r.error}));var ec=document.getElementById('depCardErr');if(ec)ec.textContent="Your card couldn't be processed. Please try another card.";updateDepositSubmitState();return;}
+      track('book_error',buildEventPayload({error_message:r.error,error_source:'api_business',retry_count:0}));
+      alert(r.error);
+      if(r.error.indexOf('no longer')>=0||r.error.indexOf('埋ま')>=0){monthCache={};renderCalendar(calYear,calMonth);goTo('date');}
+      return;
+    }
+    saveUserInfo();
+    var completePayload=buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone),menu:state.menuIds.join(','),price:state.totalPrice,addons:addonIds,residency:state.residency||''});
+    if(storedGclid)completePayload.gclid=storedGclid;
+    if(DEPOSIT.required){completePayload.deposit_amount=DEPOSIT.amount;}
+    track('book_complete',completePayload);
+    clearDepositUI();
+    renderDone();goTo('done');
+  })
+  .catch(function(err){hideLoading();var btn3=document.getElementById('bookBtn');btn3.disabled=false;track('book_error',buildEventPayload({error_message:(err&&err.message)||'network',error_source:'network',retry_count:(err&&err.retryCount)||0}));alert(t('error'));});
 }
 function generateICS(){
   var parts=state.date.split('-');
