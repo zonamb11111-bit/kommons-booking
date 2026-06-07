@@ -243,6 +243,13 @@ textarea.form-input{resize:vertical;min-height:60px}
 .dep-card-err{font-size:12px;color:var(--error);min-height:16px;margin-bottom:8px}
 .dep-consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text);line-height:1.45;margin-bottom:6px;cursor:pointer}
 .dep-consent input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--accent)}
+.dep-wallets{margin:2px 0 10px}
+.dep-wallets.is-locked{opacity:.45;pointer-events:none}
+.dep-applepay{-webkit-appearance:-apple-pay-button;appearance:-apple-pay-button;-apple-pay-button-type:plain;-apple-pay-button-style:black;width:100%;height:48px;border:none;border-radius:10px;cursor:pointer;margin-bottom:8px}
+#google-pay-button{width:100%;min-height:48px;margin-bottom:8px}
+.dep-or{display:flex;align-items:center;text-align:center;color:var(--text2);font-size:12px;margin:6px 0 2px}
+.dep-or::before,.dep-or::after{content:"";flex:1;border-bottom:1px solid var(--border)}
+.dep-or::before{margin-right:10px}.dep-or::after{margin-left:10px}
 
 </style>
 </head>
@@ -859,19 +866,67 @@ function applyDepositUI(r){
     +'<ul><li>Free to cancel or change up to the day before — please tell us as early as you can.</li>'
     +'<li>For a first visit with a longer service (color, or 3+ hours), a 50% deposit secures the booking and goes toward your service on the day. It is non-refundable for same-day cancellations or no-shows.</li></ul></div>'
     +'<div class="dep-amount">Deposit (50%): <strong>'+escHtml(amt)+'</strong> — applied to your service today.</div>'
+    +'<label class="dep-consent"><input type="checkbox" id="depConsent" onchange="onDepConsent()"><span>I understand the 50% deposit is non-refundable for same-day cancellations or no-shows, and goes toward my service on the day.</span></label>'
+    +'<div id="dep-wallets" class="dep-wallets is-locked" style="display:none">'
+      +'<button id="apple-pay-button" class="dep-applepay" type="button" style="display:none" aria-label="Pay with Apple Pay"></button>'
+      +'<div id="google-pay-button" style="display:none"></div>'
+      +'<div class="dep-or" id="dep-or" style="display:none">or pay with card</div>'
+    +'</div>'
     +'<div id="card-container" class="dep-card"></div>'
-    +'<div class="dep-card-err" id="depCardErr"></div>'
-    +'<label class="dep-consent"><input type="checkbox" id="depConsent" onchange="onDepConsent()"><span>I understand the 50% deposit is non-refundable for same-day cancellations or no-shows, and goes toward my service on the day.</span></label>';
+    +'<div class="dep-card-err" id="depCardErr"></div>';
   var btn=document.getElementById('bookBtn');btn.textContent='Pay '+amt+' deposit & confirm booking';btn.disabled=true;
   loadSquareSdk(r.square.env).then(function(){
     DEPOSIT.payments=window.Square.payments(r.square.applicationId,r.square.locationId);
     return DEPOSIT.payments.card();
   }).then(function(card){
     DEPOSIT.card=card;return card.attach('#card-container');
-  }).then(function(){updateDepositSubmitState();})
+  }).then(function(){
+    updateDepositSubmitState();
+    initWallets(r.depositAmount);   // Apple Pay / Google Pay（使える環境だけ出る・失敗してもカード入力は無傷）
+  })
   .catch(function(){var e=document.getElementById('depCardErr');if(e){e.textContent='Card form could not load. Please reload the page and try again.';}});
 }
-function onDepConsent(){DEPOSIT.consent=!!document.getElementById('depConsent').checked;updateDepositSubmitState();}
+function depPaymentRequest(amountYen){
+  return DEPOSIT.payments.paymentRequest({ countryCode:'JP', currencyCode:'JPY', total:{ amount:String(amountYen), label:'Deposit (50%)' } });
+}
+function showWalletWrap_(){ var w=document.getElementById('dep-wallets'); if(w){w.style.display='';} var or=document.getElementById('dep-or'); if(or){or.style.display='';} }
+function walletPay_(walletObj){
+  // ⚠ Apple Pay はクリック直後に同期で tokenize する必要があるので、ここで非同期処理を挟まない
+  if(!DEPOSIT.consent){ var c=document.getElementById('depConsent'); if(c)c.focus(); return; }
+  walletObj.tokenize().then(function(res){
+    if(res&&res.status==='OK'){ doBook(res.token); }
+    else{
+      var msg=(res&&res.errors&&res.errors[0]&&res.errors[0].message)||'';
+      if(msg){ var ec=document.getElementById('depCardErr'); if(ec)ec.textContent=msg; }
+    }
+  }).catch(function(){ /* ユーザーがウォレットを閉じた等は無視（カード入力で続行可）*/ });
+}
+function initWallets(amountYen){
+  if(!DEPOSIT.payments)return;
+  // Apple Pay（Safari限定・本番はドメイン登録が必要）
+  try{
+    DEPOSIT.payments.applePay(depPaymentRequest(amountYen)).then(function(applePay){
+      var b=document.getElementById('apple-pay-button'); if(!b)return;
+      b.style.display=''; showWalletWrap_();
+      b.addEventListener('click', function(e){ e.preventDefault(); walletPay_(applePay); });
+    }).catch(function(){});
+  }catch(e){}
+  // Google Pay（Chrome / Android 等）
+  try{
+    DEPOSIT.payments.googlePay(depPaymentRequest(amountYen)).then(function(googlePay){
+      return googlePay.attach('#google-pay-button').then(function(){
+        var b=document.getElementById('google-pay-button'); if(!b)return;
+        b.style.display=''; showWalletWrap_();
+        b.addEventListener('click', function(e){ e.preventDefault(); walletPay_(googlePay); });
+      });
+    }).catch(function(){});
+  }catch(e){}
+}
+function onDepConsent(){
+  DEPOSIT.consent=!!document.getElementById('depConsent').checked;
+  updateDepositSubmitState();
+  var w=document.getElementById('dep-wallets'); if(w){ w.classList.toggle('is-locked', !DEPOSIT.consent); }
+}
 function updateDepositSubmitState(){document.getElementById('bookBtn').disabled=!(DEPOSIT.required&&DEPOSIT.consent&&DEPOSIT.card);}
 
 function submitBooking(){
