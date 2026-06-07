@@ -809,7 +809,7 @@ function renderConfirmation(){
 /* ── Deposit (Square) ── EN×初回×180分+ のみ・GAS の DEPOSIT_ENFORCE=on の時だけサーバーが要求する。
    off の間は checkdeposit が常に depositRequired:false を返す＝このブロックは一切UIを出さず従来通り。
    キー値（applicationId/locationId/env）はハードコードせず checkdeposit 応答から受け取る。 */
-var DEPOSIT={required:false,amount:0,square:null,payments:null,card:null,consent:false,previewKey:'',previewRequired:false};
+var DEPOSIT={required:false,amount:0,square:null,payments:null,card:null,consent:false,previewKey:'',previewRequired:false,method:''};
 var SQUARE_SDK={};
 function squareSdkUrl(env){return env==='production'?'https://web.squarecdn.com/v1/square.js':'https://sandbox.web.squarecdn.com/v1/square.js';}
 function loadSquareSdk(env){
@@ -858,7 +858,8 @@ function maybeSetupDeposit(){
   });
 }
 function applyDepositUI(r){
-  DEPOSIT.required=true;DEPOSIT.amount=r.depositAmount;DEPOSIT.square=r.square;DEPOSIT.consent=false;
+  DEPOSIT.required=true;DEPOSIT.amount=r.depositAmount;DEPOSIT.square=r.square;DEPOSIT.consent=false;DEPOSIT.method='';
+  track('deposit_shown',buildEventPayload({deposit_amount:r.depositAmount,value:state.totalPrice,currency:'JPY'}));
   var amt=fmtYen(r.depositAmount);
   document.getElementById('depositBlock').innerHTML=
     '<div class="dep-policy"><div class="dep-policy-h">A note on cancellations</div>'
@@ -890,9 +891,10 @@ function depPaymentRequest(amountYen){
   return DEPOSIT.payments.paymentRequest({ countryCode:'JP', currencyCode:'JPY', total:{ amount:String(amountYen), label:'Deposit (50%)' } });
 }
 function showWalletWrap_(){ var w=document.getElementById('dep-wallets'); if(w){w.style.display='';} var or=document.getElementById('dep-or'); if(or){or.style.display='';} }
-function walletPay_(walletObj){
+function walletPay_(walletObj, method){
   // ⚠ Apple Pay はクリック直後に同期で tokenize する必要があるので、ここで非同期処理を挟まない
   if(!DEPOSIT.consent){ var c=document.getElementById('depConsent'); if(c)c.focus(); return; }
+  DEPOSIT.method=method||'wallet'; track('deposit_pay_click',buildEventPayload({payment_method:DEPOSIT.method}));
   walletObj.tokenize().then(function(res){
     if(res&&res.status==='OK'){ doBook(res.token); }
     else{
@@ -908,7 +910,7 @@ function initWallets(amountYen){
     DEPOSIT.payments.applePay(depPaymentRequest(amountYen)).then(function(applePay){
       var b=document.getElementById('apple-pay-button'); if(!b)return;
       b.style.display=''; showWalletWrap_();
-      b.addEventListener('click', function(e){ e.preventDefault(); walletPay_(applePay); });
+      b.addEventListener('click', function(e){ e.preventDefault(); walletPay_(applePay,'apple_pay'); });
     }).catch(function(){});
   }catch(e){}
   // Google Pay（Chrome / Android 等）
@@ -917,7 +919,7 @@ function initWallets(amountYen){
       return googlePay.attach('#google-pay-button').then(function(){
         var b=document.getElementById('google-pay-button'); if(!b)return;
         b.style.display=''; showWalletWrap_();
-        b.addEventListener('click', function(e){ e.preventDefault(); walletPay_(googlePay); });
+        b.addEventListener('click', function(e){ e.preventDefault(); walletPay_(googlePay,'google_pay'); });
       });
     }).catch(function(){});
   }catch(e){}
@@ -932,6 +934,7 @@ function updateDepositSubmitState(){document.getElementById('bookBtn').disabled=
 function submitBooking(){
   if(DEPOSIT.required){
     if(!DEPOSIT.consent||!DEPOSIT.card){updateDepositSubmitState();return;}
+    DEPOSIT.method='card'; track('deposit_pay_click',buildEventPayload({payment_method:'card'}));
     var btn0=document.getElementById('bookBtn');btn0.disabled=true;showLoading();
     DEPOSIT.card.tokenize().then(function(res){
       if(res&&res.status==='OK'){doBook(res.token);}
@@ -994,7 +997,7 @@ function doBook(depositToken){
     saveUserInfo();
     var completePayload=buildEventPayload({value:state.totalPrice,currency:'JPY',duration_min:state.totalDuration,transaction_id:(r&&r.booking&&r.booking.eventId)||'',booking_date:state.date,booking_time:state.time,lead_days:getLeadDays(state.date),booking_day_of_week:getDayOfWeek(state.date),is_japan_phone:isJapanPhone(state.phone),menu:state.menuIds.join(','),price:state.totalPrice,addons:addonIds,residency:state.residency||''});
     if(storedGclid)completePayload.gclid=storedGclid;
-    if(DEPOSIT.required){completePayload.deposit_amount=DEPOSIT.amount;}
+    if(DEPOSIT.required){completePayload.deposit_amount=DEPOSIT.amount;completePayload.payment_method=DEPOSIT.method;track('deposit_paid',buildEventPayload({deposit_amount:DEPOSIT.amount,payment_method:DEPOSIT.method,value:state.totalPrice,currency:'JPY'}));}
     track('book_complete',completePayload);
     clearDepositUI();
     renderDone();goTo('done');
