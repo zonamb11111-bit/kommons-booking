@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>予約 — HIKARU TERADA English speaking hair salon in Tokyo | 高円寺美容室</title>
+<meta name="description" content="高円寺の英語対応美容室 HIKARU TERADA のオンライン予約。カット・カラー・パーマ・ヘッドスパ。Book online at an English-speaking hair salon in Koenji, Tokyo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&family=Noto+Sans+JP:wght@300..900&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   kommons LP reskin mock — axis recipe
+   one typeface (Figtree + Noto Sans JP fallback) / huge headings
+   sentence case / normal tracking / vertical rules / asymmetry
+   base one color + teal accent, restrained motion
+   ============================================================ */
+
+:root{
+  --bg:#ece8e0;
+  --ink:#191713;
+  --ink2:#6f6a5e;
+  --line:#d5cec0;
+  --line2:#b9b1a0;
+  --teal:#14655c;
+  --teal-deep:#0e4f48;
+  --accent:#14655c;
+  --terra:#a8503a;
+  --error:#a8503a;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+html,body{overflow-x:clip}
+body{
+  font-family:'Figtree','Noto Sans JP',sans-serif;
+  background:transparent;color:var(--ink);
+  font-size:16px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;
+  padding-top:var(--safe-top);padding-bottom:var(--safe-bottom);
+}
+@media(min-width:900px){
+  body::before,body::after{content:'';position:fixed;top:0;bottom:0;width:1px;background:var(--line);z-index:-1}
+  body::before{left:calc(50vw - 402px)}
+  body::after{left:calc(50vw + 402px)}
+}
+.container{max-width:804px;margin:0 auto;padding:0 22px calc(56px + var(--safe-bottom));min-height:100vh;position:relative}
+
+/* ── header ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 14px;position:relative}
+.header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100vw;height:1px;background:var(--line)}
+.logo{font-size:15px;font-weight:700;letter-spacing:.02em;margin:0}
+.lang-btn{font-size:13px;padding:2px 0;border:0;border-bottom:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;font-weight:500}
+.lang-btn:hover{color:var(--teal);border-color:var(--teal)}
+
+/* ── progress ── */
+.progress-wrap{padding:0}
+.progress-bar{height:2px;background:transparent;overflow:hidden}
+.progress-fill{height:100%;background:var(--teal);transition:width .3s ease}
+.step-label{display:none}
+.step-indicators{display:flex;justify-content:space-between;margin-top:12px;margin-bottom:4px;gap:6px}
+.step-dot{font-size:11.5px;color:var(--ink2);opacity:.45;transition:opacity .2s;white-space:nowrap}
+.step-dot .sd-no{font-variant-numeric:tabular-nums}
+.step-dot.active{opacity:1;color:var(--ink);font-weight:600}
+.step-dot.active .sd-no{color:var(--teal)}
+.step-dot.done{opacity:.75}
+
+/* ── steps ── */
+.step{display:none;animation:fadeIn .3s ease}
+.step.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.step-no{font-size:12px;font-weight:600;color:var(--teal);margin-top:26px;font-variant-numeric:tabular-nums}
+.step-title{font-size:clamp(38px,9.5vw,84px);line-height:1.02;letter-spacing:-.02em;font-weight:600;margin:6px 0 34px;max-width:14ch}
+html[lang="ja"] .step-title{font-size:clamp(28px,7.2vw,60px);font-weight:700;letter-spacing:0;max-width:none}
+.btn-back{display:inline-flex;align-items:center;font-size:20px;color:var(--ink2);background:none;border:none;padding:16px 0 0;cursor:pointer;font-family:inherit;line-height:1}
+.btn-back:hover{color:var(--ink)}
+
+/* ── hero (language select) ── */
+.hero{display:flex;flex-direction:column;min-height:calc(100svh - 40px - var(--safe-top));padding:16px 0 18px;position:relative}
+.hero-badge{position:absolute;top:8px;right:-4px;width:clamp(96px,26vw,150px);height:clamp(96px,26vw,150px);animation:spin 28s linear infinite;pointer-events:none}
+.hero-badge text{fill:var(--ink);font-size:14px;letter-spacing:.8px;font-family:'Figtree','Noto Sans JP',sans-serif}
+.hero-mark{font-weight:650;font-size:clamp(56px,16.5vw,148px);line-height:.94;letter-spacing:-.03em;margin-top:clamp(84px,24vw,150px)}
+.hm-line{overflow:hidden}
+.hm-line span{display:block;transform:translateY(115%);animation:rise .9s cubic-bezier(.2,.65,.2,1) forwards}
+.hm-line:nth-child(2) span{animation-delay:.1s}
+.hm-indent{padding-left:clamp(26px,9vw,110px)}
+@keyframes rise{to{transform:translateY(0)}}
+.hero-cta{margin-top:auto;padding-top:48px;max-width:430px}
+.hero-note{font-size:13.5px;color:var(--ink2);line-height:1.75;margin-bottom:8px}
+.lang-select-btn{display:flex;justify-content:space-between;align-items:center;width:100%;padding:18px 2px;background:none;border:0;border-top:1px solid var(--line2);font-size:20px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--ink);text-align:left;transition:color .2s}
+.lang-select-btn:last-of-type{border-bottom:1px solid var(--line2)}
+.lsb-arrow{font-size:18px;color:var(--ink2);transition:transform .25s,color .2s}
+.lang-select-btn:hover,.lang-select-btn:active{color:var(--teal)}
+.lang-select-btn:hover .lsb-arrow,.lang-select-btn:active .lsb-arrow{transform:translateX(6px);color:var(--teal)}
+.hero-marquee{overflow:clip;border-top:1px solid var(--line);margin-top:30px;padding:10px 0 2px}
+.hero-marquee-track{display:inline-flex;white-space:nowrap;animation:sigmar 38s linear infinite;font-size:12.5px;color:var(--ink2)}
+.hero-marquee-track>span{white-space:nowrap}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── category accordion ── */
+#step-category{position:relative}
+.step-badge{position:absolute;top:14px;right:0;width:128px;height:128px;animation:spin 28s linear infinite;pointer-events:none}
+.step-badge text{fill:var(--ink);font-size:14px;letter-spacing:.8px;font-family:'Figtree','Noto Sans JP',sans-serif}
+@media(max-width:700px){.step-badge{display:none}}
+.cat-grid{display:block;margin-top:4px}
+.acc-section{border-top:1px solid var(--line2)}
+.acc-section:last-of-type{border-bottom:1px solid var(--line2)}
+.acc-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.acc-left{display:flex;align-items:baseline;gap:16px;min-width:0}
+.cat-no{font-size:12px;color:var(--ink2);width:24px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.cat-name{font-size:clamp(20px,5.4vw,26px);font-weight:600;letter-spacing:-.01em}
+html[lang="ja"] .cat-name{font-size:clamp(17px,4.6vw,21px);font-weight:700;letter-spacing:0}
+.cat-sub{font-size:12.5px;color:var(--teal);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.acc-right{display:flex;align-items:center;gap:12px}
+.acc-arrow{font-size:17px;color:var(--ink2);transition:transform .25s;line-height:1}
+.acc-header.open .acc-arrow{transform:rotate(90deg)}
+.acc-header.selected .cat-name{color:var(--teal)}
+.cat-check{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.acc-body{padding:0 0 14px 40px;position:relative;animation:slideDown .25s ease}
+.acc-body::before{content:'';position:absolute;left:4px;top:2px;bottom:16px;width:1px;background:var(--line2)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.acc-note{font-size:12px;color:var(--ink2);padding:8px 0 4px}
+.menu-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:15px 0;border-top:1px solid var(--line);cursor:pointer;transition:padding .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+.acc-body > .menu-item:first-of-type{border-top:0}
+.menu-item.selected{box-shadow:inset 3px 0 0 var(--teal);padding-left:14px}
+.menu-name{font-size:16px;font-weight:500}
+.menu-desc{font-size:12.5px;color:var(--ink2);margin-top:1px}
+.menu-detail{font-size:12.5px;color:var(--ink2);margin-top:2px;font-variant-numeric:tabular-nums}
+.menu-price{font-size:15px;font-weight:600;white-space:nowrap;margin-left:12px;font-variant-numeric:tabular-nums}
+.menu-price.faded{font-size:12.5px;font-weight:400;color:var(--ink2)}
+.menu-check{color:var(--teal);font-weight:700;font-size:17px;min-width:22px;text-align:center}
+.addon-item{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 4px 18px;padding:12px 0 12px 14px;border-left:1px dashed var(--line2);cursor:pointer;transition:border-color .2s}
+.addon-item.selected{border-left:2px solid var(--teal)}
+.shampoo-note{font-size:12px;color:var(--teal);margin-top:2px}
+
+/* ── signature finder (kinetic typography) ── */
+.sig-finder{position:relative;left:50%;transform:translateX(-50%);width:100vw;margin-top:52px;background:var(--teal);color:#fff;height:92vh;height:92svh;max-height:780px;min-height:520px;overflow:hidden}
+@media(max-width:640px){.sig-finder{height:76svh;min-height:480px}}
+.sig-finder::after{content:'';position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(180deg,rgba(20,101,92,0) 0%,rgba(11,64,58,.9) 100%);pointer-events:none}
+.sig-row{position:absolute;left:0;width:100%;line-height:1;will-change:transform}
+.sig-track{display:inline-flex;white-space:nowrap;will-change:transform;animation:sigmar linear infinite}
+.sig-track.rev{animation-direction:reverse}
+.sig-track>span{white-space:nowrap;padding-right:.7em}
+@keyframes sigmar{to{transform:translateX(-50%)}}
+.sig-a{top:3%;font-size:clamp(88px,19vw,220px);font-weight:700;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.5)}
+.sig-b{top:25%;font-size:clamp(56px,13vw,150px);font-weight:650;letter-spacing:-.02em;color:#fff}
+.sig-c{top:53%;font-size:clamp(34px,8vw,86px);font-weight:500;color:rgba(255,255,255,.4)}
+.sig-d{top:66%;font-size:clamp(13px,2vw,16px);font-weight:500;color:rgba(255,255,255,.85)}
+.sig-center{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:0 22px 30px;max-width:804px;margin:0 auto}
+.sig-phrase{font-size:clamp(30px,6.5vw,62px);font-weight:600;letter-spacing:-.02em;line-height:1.05;margin-bottom:16px;max-width:13ch}
+.mood-cta{display:inline-block;color:#fff;font-size:15px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.65);padding-bottom:3px;transition:border-color .2s}
+.mood-cta:hover{border-color:#fff}
+
+/* ── calendar ── */
+.cal-nav{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.cal-month{font-size:17px;font-weight:600}
+.cal-arrow{border:0;background:none;font-size:22px;padding:2px 12px;cursor:pointer;font-family:inherit;color:var(--ink);line-height:1}
+.cal-arrow:hover{color:var(--teal)}
+.cal-arrow:disabled{opacity:.25;cursor:default}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;border-top:1px solid var(--line2);padding-top:8px}
+.cal-hdr{font-size:11.5px;color:var(--ink2);padding:8px 0;font-weight:500}
+.cal-hdr.sun{color:var(--terra)}
+.cal-hdr.sat{color:var(--ink2)}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;font-variant-numeric:tabular-nums}
+.cal-cell.available{cursor:pointer;font-weight:600}
+.cal-cell.available .cal-day{border-bottom:1px solid var(--ink);padding:0 2px 2px}
+.cal-cell.available:hover .cal-day{color:var(--teal);border-color:var(--teal)}
+.cal-cell.available:active{background:var(--teal)}
+.cal-cell.available:active .cal-day{color:#fff;border-color:transparent}
+.cal-cell.disabled{color:#bcb3a2}
+.cal-cell.today .cal-day{color:var(--teal);font-weight:700}
+
+/* ── time slots ── */
+.selected-info{font-size:13.5px;color:var(--ink2);margin-bottom:18px;padding:4px 0 4px 14px;border-left:2px solid var(--teal)}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.time-btn{padding:16px;border:1px solid var(--line2);border-radius:0;background:transparent;font-size:16px;cursor:pointer;text-align:center;transition:border-color .15s,color .15s;font-family:inherit;font-variant-numeric:tabular-nums;color:var(--ink)}
+.time-btn:hover{border-color:var(--ink)}
+.time-btn:active{border-color:var(--teal);color:var(--teal)}
+.time-btn.flash{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* ── forms ── */
+.form-group{margin-bottom:22px}
+.form-label{display:block;font-size:13px;font-weight:600;margin-bottom:2px}
+.form-label .req{color:var(--terra);margin-left:2px}
+.form-input{width:100%;padding:10px 2px;border:0;border-bottom:1px solid var(--line2);border-radius:0;font-size:16px;font-family:inherit;background:transparent;-webkit-appearance:none;color:var(--ink);transition:border-color .2s}
+.form-input:focus{outline:none;border-bottom-color:var(--teal)}
+select.form-input{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='%23191713' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 4px center;padding-right:22px}
+textarea.form-input{resize:vertical;min-height:60px;border:1px solid var(--line2);padding:10px}
+textarea.form-input:focus{border-color:var(--teal)}
+.form-error{font-size:12px;color:var(--error);margin-top:4px;display:none}
+.form-error.show{display:block}
+.residency-row{display:flex;gap:10px;margin-top:8px}
+.residency-btn{flex:1;padding:14px 10px;border:1px solid var(--line2);border-radius:0;background:transparent;font-size:14px;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s ease;line-height:1.3;color:var(--ink)}
+.residency-btn.selected{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal);color:var(--teal);font-weight:600}
+.btn-primary{width:100%;padding:18px;border:none;border-radius:0;background:var(--ink);color:#f2efe8;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s;margin-top:14px}
+.btn-primary:hover,.btn-primary:active{background:var(--teal)}
+.btn-primary:disabled{background:var(--line2);cursor:default}
+
+/* ── confirm / done ── */
+.confirm-card{border-top:2px solid var(--ink);padding-top:2px;margin-bottom:20px}
+.confirm-row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.confirm-label{color:var(--ink2)}
+.confirm-value{font-weight:500;text-align:right;max-width:60%;overflow-wrap:anywhere}
+.done-wrap{text-align:left;padding-top:34px}
+.done-check{color:var(--teal);font-size:32px;line-height:1;margin-bottom:10px}
+.done-msg{font-size:14px;color:var(--ink2);margin-top:-18px;margin-bottom:26px}
+.done-map{display:inline-block;margin-top:18px;color:var(--teal);font-size:14px;text-decoration:none;border-bottom:1px solid var(--teal);padding-bottom:2px}
+.cal-download{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:12px 24px;border:1px solid var(--line2);border-radius:0;background:transparent;color:var(--ink);font-size:14px;cursor:pointer;font-family:inherit;text-decoration:none;transition:border-color .15s}
+.cal-download:hover,.cal-download:active{border-color:var(--ink)}
+.btn-line-close{width:100%;padding:14px;border:none;border-radius:0;background:#06C755;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:12px}
+
+/* ── misc ── */
+.loading{display:none;position:fixed;inset:0;background:rgba(236,232,224,.86);z-index:100;align-items:center;justify-content:center}
+.loading.show{display:flex}
+.spinner{width:28px;height:28px;border:2px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+.empty-state{text-align:left;padding:28px 0;color:var(--ink2);border-top:1px solid var(--line)}
+.empty-state p{margin-bottom:6px}
+.error-msg{text-align:left;padding:28px 0;color:var(--ink2);border-top:1px solid var(--line)}
+.retry-btn{margin-top:14px;padding:10px 24px;border:1px solid var(--line2);border-radius:0;background:transparent;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink)}
+.retry-btn:hover{border-color:var(--ink)}
+.selection-bar{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:12px 20px calc(12px + var(--safe-bottom));display:none;z-index:50}
+.selection-bar.show{display:block}
+.selection-bar-inner{max-width:760px;margin:0 auto;width:100%;display:flex;align-items:center;gap:14px}
+.sel-info{flex:1;font-size:13px;color:rgba(255,255,255,.6);line-height:1.35}
+.sel-info strong{color:#fff;display:block;font-size:14.5px}
+.sel-next{padding:12px 26px;border:none;border-radius:0;background:#f2efe8;color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .2s,color .2s}
+.sel-next:hover,.sel-next:active{background:var(--teal);color:#fff}
+.container.has-bar{padding-bottom:130px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 24px;z-index:200;font-size:14px;text-decoration:none;transition:top .2s}
+.skip-link:focus{top:0}
+.skel{background:linear-gradient(90deg,#e2ddd2 25%,#d8d2c5 50%,#e2ddd2 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;min-height:56px;margin-bottom:12px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.seo-content{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+*:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.step:focus,.step:focus-visible{outline:none}
+
+@media (prefers-reduced-motion: reduce){
+  .sig-track,.hero-badge,.hero-marquee-track,.hm-line span,.step{animation:none}
+  .hm-line span{transform:none}
+}
+
+</style>
+</head>
+<body>
+<noscript>
+<div style="max-width:480px;margin:40px auto;padding:0 20px;text-align:center">
+<h1 style="font-size:22px">HIKARU TERADA</h1>
+<p style="margin:16px 0;color:#595959">高円寺の英語対応美容室 — English speaking hair salon in Koenji, Tokyo</p>
+<p style="margin:16px 0">ご予約にはJavaScriptが必要です。<br>JavaScript is required for online booking.</p>
+<p style="margin:16px 0;font-size:14px;color:#595959">📍 東京都杉並区高円寺南4-9-8 GRANDSTATUS栗原 2F Mirror A</p>
+</div></noscript>
+<a class="skip-link" href="#step-lang">Skip to content</a>
+<div class="container" role="main">
+  <header class="header">
+    <h1 class="logo">HIKARU TERADA</h1>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()" aria-label="Switch language">EN</button>
+  </header>
+  <nav class="progress-wrap" aria-label="Booking progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarWrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="step-label" id="stepLabel"></div>
+    <div class="step-indicators" id="stepIndicators" aria-hidden="true"></div>
+  </nav>
+  <section id="step-lang" class="step">
+    <div class="hero">
+      <svg class="hero-badge" viewBox="0 0 160 160" aria-hidden="true">
+        <defs><path id="bcirc" d="M80,80 m -62,0 a62,62 0 1,1 124,0 a62,62 0 1,1 -124,0"/></defs>
+        <circle cx="80" cy="80" r="3.5" fill="#14655c"/>
+        <text><textPath href="#bcirc">english speaking hair salon — koenji, tokyo —&#160;</textPath></text>
+      </svg>
+      <div class="hero-mark" aria-label="HIKARU TERADA">
+        <div class="hm-line"><span>HIKARU</span></div>
+        <div class="hm-line hm-indent"><span>TERADA</span></div>
+      </div>
+      <div class="hero-cta">
+        <p class="hero-note">Please select your language<br>言語を選んでください</p>
+        <button class="lang-select-btn" onclick="chooseLang('ja')">日本語<span class="lsb-arrow">→</span></button>
+        <button class="lang-select-btn" onclick="chooseLang('en')">English<span class="lsb-arrow">→</span></button>
+      </div>
+      <div class="hero-marquee" aria-hidden="true">
+        <div class="hero-marquee-track">
+          <span>Hair is your signature&ensp;—&ensp;MOOD ESSENCE&ensp;—&ensp;SIGNATURE CODE&ensp;—&ensp;Hair is your signature&ensp;—&ensp;MOOD ESSENCE&ensp;—&ensp;SIGNATURE CODE&ensp;—&ensp;</span>
+          <span>Hair is your signature&ensp;—&ensp;MOOD ESSENCE&ensp;—&ensp;SIGNATURE CODE&ensp;—&ensp;Hair is your signature&ensp;—&ensp;MOOD ESSENCE&ensp;—&ensp;SIGNATURE CODE&ensp;—&ensp;</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="step-category" class="step">
+    <svg class="step-badge" viewBox="0 0 160 160" aria-hidden="true">
+      <defs><path id="bcirc2" d="M80,80 m -62,0 a62,62 0 1,1 124,0 a62,62 0 1,1 -124,0"/></defs>
+      <circle cx="80" cy="80" r="3.5" fill="#14655c"/>
+      <text><textPath href="#bcirc2">english speaking hair salon — koenji, tokyo —&#160;</textPath></text>
+    </svg>
+    <div class="step-no">01</div>
+    <h2 class="step-title" id="catTitle"></h2>
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="sig-finder" id="sigFinder">
+      <div class="sig-row sig-a"><div class="sig-track" id="sigTrackA"></div></div>
+      <div class="sig-row sig-b"><div class="sig-track rev" id="sigTrackB"></div></div>
+      <div class="sig-row sig-c"><div class="sig-track" id="sigTrackC"></div></div>
+      <div class="sig-row sig-d"><div class="sig-track rev" id="sigTrackD"></div></div>
+      <div class="sig-center">
+        <p class="sig-phrase">Hair is your signature</p>
+        <a class="mood-cta" id="moodCta" href="https://find.hairisyoursignature.jp" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
+  </section>
+  <section id="step-date" class="step">
+    <button class="btn-back" id="dateBack" onclick="goBack()">&larr;</button>
+    <div class="step-no">02</div>
+    <h2 class="step-title" id="dateTitle"></h2>
+    <div id="calendar"></div>
+  </section>
+  <section id="step-time" class="step">
+    <button class="btn-back" onclick="goBack()">&larr;</button>
+    <div class="step-no">03</div>
+    <h2 class="step-title" id="timeTitle"></h2>
+    <div class="selected-info" id="selectedDateInfo"></div>
+    <div id="timeGrid"></div>
+  </section>
+  <section id="step-info" class="step">
+    <button class="btn-back" onclick="goBack()">&larr;</button>
+    <div class="step-no">04</div>
+    <h2 class="step-title" id="infoTitle"></h2>
+    <div id="infoMoodSummary"></div>
+    <form id="infoForm" onsubmit="submitInfo(event)">
+      <div class="form-group">
+        <label class="form-label"><span id="nameLabel"></span><span class="req">*</span></label>
+        <input class="form-input" type="text" id="nameInput" required autocomplete="name" aria-required="true">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="phoneInput"><span id="phoneLabel"></span><span class="req" id="phoneReq">*</span></label>
+        <input class="form-input" type="tel" id="phoneInput" autocomplete="tel" aria-describedby="phoneError">
+        <div class="form-error" id="phoneError" role="alert"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="emailInput"><span id="emailLabel"></span><span class="req">*</span></label>
+        <input class="form-input" type="email" id="emailInput" required autocomplete="email" aria-required="true">
+      </div>
+      <div class="form-group" id="residencyGroup" style="display:none">
+        <label class="form-label"><span id="residencyLabel"></span><span class="req">*</span></label>
+        <div class="residency-row">
+          <button type="button" class="residency-btn" id="residentBtn" onclick="selectResidency('resident')"></button>
+          <button type="button" class="residency-btn" id="visitingBtn" onclick="selectResidency('visiting')"></button>
+        </div>
+        <div class="form-error" id="residencyError"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="genderLabel"></label>
+        <select class="form-input" id="genderInput">
+          <option value=""></option>
+          <option value="male"></option>
+          <option value="female"></option>
+          <option value="other"></option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="notesLabel"></label>
+        <textarea class="form-input" id="notesInput" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn-primary" id="infoBtn"></button>
+    </form>
+  </section>
+  <section id="step-confirm" class="step">
+    <button class="btn-back" onclick="goBack()">&larr;</button>
+    <div class="step-no">05</div>
+    <h2 class="step-title" id="confirmTitle"></h2>
+    <div class="confirm-card" id="confirmCard"></div>
+    <div id="confirmMoodSummary"></div>
+    <button class="btn-primary" id="bookBtn" onclick="submitBooking()"></button>
+  </section>
+  <section id="step-done" class="step">
+    <div class="done-wrap">
+      <div class="done-check">&#10003;</div>
+      <h2 class="step-title" id="doneTitle"></h2>
+      <p class="done-msg" id="doneMsg"></p>
+      <div class="confirm-card" id="doneCard"></div>
+      <a class="done-map" href="https://share.google/1g0kVyXueA4LD5iWF" target="_blank" id="mapLink"></a>
+    </div>
+  </section>
+  <div class="seo-content" aria-hidden="true">
+    <h2>HIKARU TERADA — English Speaking Hair Salon in Koenji, Tokyo</h2>
+    <p>高円寺駅南口徒歩3分の美容室。スタイリスト寺田光（Hikaru Terada）は15年以上の経験を持ち、欧米人の髪質にも精通。英語での施術が可能です。カット、カラー、パーマ、ヘッドスパ、トリートメントなど幅広いメニューをご用意しています。</p>
+    <p>Located 3 minutes from Koenji Station South Exit. Stylist Hikaru Terada has over 15 years of experience and specializes in Western and European hair types. Full English service available. We offer cuts, color, perms, head spa, and treatments.</p>
+    <address>東京都杉並区高円寺南4-9-8 GRANDSTATUS栗原 2F Mirror A</address>
+  </div>
+</div>
+<div class="loading" id="loading" role="status" aria-live="polite"><div class="spinner" aria-hidden="true"></div><span class="sr-only">Loading...</span></div>
+<div class="selection-bar" id="selectionBar">
+  <div class="selection-bar-inner">
+    <div class="sel-info" id="selInfo"></div>
+    <button class="sel-next" id="selNextBtn" onclick="proceedWithSelection()"></button>
+  </div>
+</div>
+<script>
+/* ============================================================
+   MOCK NOTE: same flow / same copy as production index.html.
+   Reads menus & availability from the live GAS API when it can;
+   falls back to placeholder data ([ ] prices) offline.
+   The final "Book Now" is stubbed — no real booking is created.
+   ============================================================ */
+var GAS_API = 'https://script.google.com/macros/s/AKfycbyJkyjUM2x9Eiv0AwvtUMi0Syx34jrppeglnXAOVVeVNxGDwDaHhqar255O4rpEqPCj1Q/exec';
+var API_MAP = {handleMenus:'menus',handleSlots:'slots',handleDays:'days',handleBook:'book'};
+var urlParams = new URLSearchParams(window.location.search);
+var LANG = urlParams.get('lang') || '';
+if (LANG === 'jp') LANG = 'ja';
+var INITIAL_MENU_ID = (urlParams.get('menuId') || urlParams.get('menu') || '').replace(/[^a-zA-Z0-9_]/g, '');
+var LANG_FROM_URL = !!urlParams.get('lang');
+var MOOD_CURATOR = {};
+['mood','cut','cutLength','perm','color','nuance','technique','texture','damage','spa','signatureCode','menu','addons','length','eyebrow','scalp'].forEach(function(k) {
+  var v = urlParams.get(k);
+  if (v) MOOD_CURATOR[k] = v;
+});
+function track(){}
+
+/* ── API: live first, mock fallback ── */
+function api(fn, params) {
+  var action = API_MAP[fn] || fn;
+  var qs = new URLSearchParams({ action: action });
+  if (params) {
+    Object.keys(params).forEach(function(k) {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') qs.set(k, params[k]);
+    });
+  }
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function() { controller.abort(); }, 8000);
+  return fetch(GAS_API + '?' + qs.toString(), { signal: controller.signal })
+    .then(function(r) {
+      clearTimeout(timeoutId);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+}
+function apiSafe(fn, params) {
+  return api(fn, params).catch(function() { return mockApi(fn, params); });
+}
+
+/* ── fallback demo data (prices unknown → shown as [ ]) ── */
+var MOCK_MENUS = {
+  cut_std:{category:'cut',name_en:'Cut',name_jp:'カット',price:null,duration:null},
+  eyebrow:{category:'cut',addon:true,showWith:['cut_std'],name_en:'Eyebrow Cut',name_jp:'眉カット',price:null,duration:null},
+  color_full:{category:'color',name_en:'Full Color',name_jp:'フルカラー',price:null,duration:null},
+  color_retouch:{category:'color',name_en:'Retouch Color',name_jp:'リタッチカラー',price:null,duration:null},
+  perm_std:{category:'perm',name_en:'Perm',name_jp:'パーマ',price:null,duration:null},
+  treat_std:{category:'treatment',name_en:'Treatment',name_jp:'トリートメント',price:null,duration:null},
+  spa_std:{category:'headspa',name_en:'Head Spa',name_jp:'ヘッドスパ',price:null,duration:null},
+  shampoo_blow:{category:'shampoo',langOnly:'en',name_en:'Shampoo & Blow Dry',name_jp:'シャンプーブロー',price:null,duration:null},
+  combo_cut_color:{category:'cut',combo:true,name_en:'Cut + Full Color',name_jp:'カット＋フルカラー',price:null,duration:null},
+  combo_cut_perm:{category:'cut',combo:true,name_en:'Cut + Perm',name_jp:'カット＋パーマ',price:null,duration:null}
+};
+function mockApi(fn, params) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      if (fn === 'handleMenus') { resolve({menus: MOCK_MENUS}); return; }
+      if (fn === 'handleDays') {
+        var ym = (params && params.yearMonth || '').split('-');
+        var y = parseInt(ym[0], 10), m = parseInt(ym[1], 10);
+        var today = new Date(); today.setHours(0,0,0,0);
+        var limit = new Date(today.getTime() + 30 * 86400000);
+        var total = new Date(y, m, 0).getDate();
+        var days = [];
+        for (var d = 1; d <= total; d++) {
+          var dt = new Date(y, m - 1, d);
+          if (dt > today && dt <= limit) days.push({date: y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0'), slotCount: 4});
+        }
+        resolve({days: days}); return;
+      }
+      if (fn === 'handleSlots') {
+        var dur = state.totalDuration || 90;
+        var slots = ['10:00','11:30','13:00','14:30','16:00','17:30'].map(function(s) {
+          var p = s.split(':');
+          var mins = parseInt(p[0],10) * 60 + parseInt(p[1],10) + dur;
+          return {start: s, end: String(Math.floor(mins/60)).padStart(2,'0') + ':' + String(mins%60).padStart(2,'0')};
+        });
+        resolve({slots: slots}); return;
+      }
+      resolve({});
+    }, 350);
+  });
+}
+
+var state = {step:'',category:'',openCategory:'',selections:{},addons:{},isCombo:false,menuId:'',menuIds:[],totalDuration:0,totalPrice:0,priceUnknown:false,durUnknown:false,date:'',time:'',timeEnd:'',name:'',phone:'',email:'',notes:'',gender:'',residency:''};
+var allMenus = {};
+var calYear, calMonth;
+var monthCache = {};
+var CATS = [
+  {id:'cut',icon:'Cut',en:'Cut',ja:'カット'},
+  {id:'color',icon:'Color',en:'Color',ja:'カラー'},
+  {id:'perm',icon:'Perm',en:'Perm',ja:'パーマ'},
+  {id:'treatment',icon:'Care',en:'Treatment',ja:'トリートメント'},
+  {id:'headspa',icon:'Spa',en:'Head Spa',ja:'ヘッドスパ'},
+  {id:'shampoo',icon:'S&B',en:'Shampoo Blow',ja:'',langOnly:'en'},
+  {id:'combo',icon:'Set',en:'Combo Menus',ja:'組み合わせメニュー'}
+];
+var T = {
+  en:{selectCategory:'Select your services',selectMenu:'Choose a menu',selectCombo:'Combo Menus',selectDate:'Pick a date',selectTime:'Pick a time',yourInfo:'Your information',confirmBooking:'Confirm your booking',booked:'Booking confirmed!',bookedMsg:'We look forward to seeing you!',name:'Name',phone:'Phone (optional)',email:'Email',notes:'Notes (optional)',gender:'Gender (optional)',genderPlaceholder:'— Select —',genderMale:'Male',genderFemale:'Female',genderOther:'Prefer not to say',namePh:'Your full name',phonePh:'090-1234-5678 (optional)',emailPh:'your@email.com',notesPh:'Any requests...',phoneErr:'Please enter a valid phone number (7–15 digits)',residency:'Are you...',residencyResident:'🇯🇵 Living in Japan',residencyVisiting:'✈️ Visiting Tokyo',residencyErr:'Please select an option',next:'Next',bookNow:'Book Now',menu:'Menu',dateTime:'Date & Time',duration:'Duration',price:'Price',min:' min',yen:'¥',noSlots:'No available times on this day',tryAnother:'Please try another date.',error:'Something went wrong. Please try again.',errorRetrying:'Connection issue. Retrying...',mapText:'📍 View on Google Maps',address:'4-9-8 Koenjiminami, GRANDSTATUS Kurihara 2F Mirror A, Suginami-ku, Tokyo',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',stepMenu:'Menu',stepDate:'Date',stepTime:'Time',stepInfo:'Info',stepConfirm:'Confirm'},
+  ja:{selectCategory:'メニューを選んでください',selectMenu:'メニューを選んでください',selectCombo:'組み合わせメニュー',selectDate:'日付を選んでください',selectTime:'時間を選んでください',yourInfo:'お客様情報',confirmBooking:'予約内容の確認',booked:'ご予約が確定しました',bookedMsg:'ご来店をお待ちしております！',name:'お名前',phone:'電話番号',email:'メール',notes:'備考（任意）',gender:'性別（任意）',genderPlaceholder:'— 選択 —',genderMale:'男性',genderFemale:'女性',genderOther:'回答しない',namePh:'フルネーム',phonePh:'090-1234-5678',emailPh:'your@email.com',notesPh:'ご要望があれば...',phoneErr:'有効な電話番号を入力してください（7〜15桁）',residency:'',residencyResident:'',residencyVisiting:'',residencyErr:'',next:'次へ',bookNow:'予約する',menu:'メニュー',dateTime:'日時',duration:'所要時間',price:'料金',min:'分',yen:'¥',noSlots:'この日は空きがありません',tryAnother:'別の日をお選びください',error:'エラーが発生しました。もう一度お試しください。',errorRetrying:'接続に問題があります。再試行中...',mapText:'📍 Google Mapsで見る',address:'東京都杉並区高円寺南 4-9-8 GRANDSTATUS栗原 2F Mirror A',sun:'日',mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',stepMenu:'メニュー',stepDate:'日付',stepTime:'時間',stepInfo:'情報',stepConfirm:'確認'}
+};
+function t(k){return T[LANG][k]||k}
+
+function showLoading(){document.getElementById('loading').classList.add('show')}
+function hideLoading(){document.getElementById('loading').classList.remove('show')}
+function escHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function cRow(l,v){return '<div class="confirm-row"><span class="confirm-label">'+escHtml(l)+'</span><span class="confirm-value">'+escHtml(v)+'</span></div>'}
+function fmtPrice(p){return p==null?t('yen')+'[ ]':t('yen')+p.toLocaleString()}
+function fmtDur(d){return d==null?'':d+t('min')}
+
+var STEP_PCT={lang:0,category:0,date:25,time:50,info:75,confirm:90,done:100};
+var STEP_LBL={lang:'',category:'stepMenu',date:'stepDate',time:'stepTime',info:'stepInfo',confirm:'stepConfirm',done:''};
+function goTo(step){
+  var secs=document.querySelectorAll('.step');for(var i=0;i<secs.length;i++)secs[i].classList.remove('active');
+  state.step=step;document.getElementById('step-'+step).classList.add('active');
+  var isLangStep=step==='lang';
+  document.querySelector('.header').style.display=isLangStep?'none':'';
+  document.querySelector('.progress-wrap').style.display=isLangStep?'none':'';
+  document.getElementById('progressFill').style.width=(STEP_PCT[step]||0)+'%';
+  var lk=STEP_LBL[step];document.getElementById('stepLabel').textContent=lk?t(lk):'';
+  var stepsArr=['category','date','time','info','confirm'];var lblArr=['stepMenu','stepDate','stepTime','stepInfo','stepConfirm'];var curIdx=stepsArr.indexOf(step);
+  var indEl=document.getElementById('stepIndicators');
+  if(step==='done'||isLangStep){indEl.style.display='none'}else{indEl.style.display='flex';var ih='';for(var si=0;si<stepsArr.length;si++){var cls='step-dot';if(si===curIdx)cls+=' active';else if(si<curIdx)cls+=' done';ih+='<div class="'+cls+'"><span class="sd-no">0'+(si+1)+'</span> '+t(lblArr[si])+'</div>'}indEl.innerHTML=ih}
+  var pct=STEP_PCT[step]||0;var pb=document.getElementById('progressBarWrap');if(pb){pb.setAttribute('aria-valuenow',pct)}
+  updateSelectionBar();window.scrollTo(0,0);
+  var focusEl=document.getElementById('step-'+step);if(focusEl){focusEl.setAttribute('tabindex','-1');focusEl.focus({preventScroll:true})}
+}
+function goBack(){
+  switch(state.step){
+    case 'date':renderCategories();goTo('category');break;
+    case 'time':renderCalendar(calYear,calMonth);goTo('date');break;
+    case 'info':goTo('time');break;
+    case 'confirm':if(state.infoSkipped){goTo('time')}else{renderInfoForm();goTo('info')}break;
+  }
+}
+function detectBrowserLang(){
+  try{var bl=(navigator.language||navigator.userLanguage||'').toLowerCase();return bl.startsWith('ja')?'ja':'en'}catch(e){return 'ja'}
+}
+function chooseLang(lang){
+  LANG=lang;
+  document.documentElement.lang=LANG==='en'?'en':'ja';
+  document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
+  init(false);
+}
+function toggleLang(){
+  LANG=LANG==='en'?'ja':'en';
+  document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
+  document.documentElement.lang=LANG==='en'?'en':'ja';
+  monthCache={};init(true);
+}
+
+/* ── Selection helpers ── */
+function needsShampoo(){
+  var ids=Object.values(state.selections);
+  if(ids.length===0)return false;
+  var hasCut=!!state.selections['cut'];
+  if(state.selections['shampoo']==='shampoo_blow')return false;
+  return !hasCut;
+}
+function getSelTotals(){
+  var ids=Object.values(state.selections);var p=0,d=0,pu=false,du=false;
+  function add(m){if(!m)return;if(m.price==null)pu=true;else p+=m.price;if(m.duration==null)du=true;else d+=m.duration}
+  ids.forEach(function(id){add(allMenus[id])});
+  Object.keys(state.addons).forEach(function(id){if(state.addons[id])add(allMenus[id])});
+  var shampoo=needsShampoo()&&allMenus['shampoo_blow'];
+  if(shampoo)add(shampoo);
+  var addonCount=Object.keys(state.addons).filter(function(id){return state.addons[id];}).length;
+  return {price:p,duration:d,count:ids.length,hasShampoo:!!shampoo,addonCount:addonCount,priceUnknown:pu,durUnknown:du};
+}
+function updateSelectionBar(){
+  var bar=document.getElementById('selectionBar');var ct=document.querySelector('.container');
+  var n=Object.keys(state.selections).length;
+  if(n===0||state.step!=='category'){bar.classList.remove('show');ct.classList.remove('has-bar');return}
+  bar.classList.add('show');ct.classList.add('has-bar');
+  var tot=getSelTotals();
+  var priceStr=tot.priceUnknown?t('yen')+'[ ]':t('yen')+tot.price.toLocaleString();
+  var durStr=tot.durUnknown?'':' · '+tot.duration+t('min');
+  var shampooNote=tot.hasShampoo?'<div class="shampoo-note">+ '+(LANG==='en'?'Shampoo & Blow Dry':'シャンプー＆ブロー')+'</div>':'';
+  document.getElementById('selInfo').innerHTML='<strong>'+tot.count+(LANG==='en'?(tot.count>1?' services':' service'):'件')+'</strong>'+priceStr+durStr+shampooNote;
+  document.getElementById('selNextBtn').textContent=t('next');
+}
+function proceedWithSelection(){
+  var tot=getSelTotals();state.isCombo=false;state.menuIds=Object.values(state.selections);
+  Object.keys(state.addons).forEach(function(id){if(state.addons[id])state.menuIds.push(id);});
+  if(tot.hasShampoo)state.menuIds.push('shampoo_blow');
+  state.totalDuration=tot.duration;state.totalPrice=tot.price;
+  state.priceUnknown=tot.priceUnknown;state.durUnknown=tot.durUnknown;
+  monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
+  renderCalendar(calYear,calMonth);goTo('date');
+}
+function menuNamesDisplay(){
+  return state.menuIds.map(function(id){var m=allMenus[id];return m?(LANG==='en'?m.name_en:m.name_jp):id}).join(' + ');
+}
+
+/* ── Categories — accordion, hairline rows ── */
+function renderCategories(){
+  document.getElementById('catTitle').textContent=t('selectCategory');
+  document.getElementById('moodCta').textContent=LANG==='en'?'Not sure? Try Mood Curator →':'メニューに迷ったら → Mood Curator で診断';
+  var grid=document.getElementById('catGrid');var html='';var idx=0;
+  CATS.forEach(function(cat){
+    if(cat.langOnly&&cat.langOnly!==LANG)return;
+    var isComboCat=(cat.id==='combo');var hasMenu=false;
+    for(var id in allMenus){var m=allMenus[id];if(m.rebookingOnly)continue;
+      if(isComboCat){if(m.combo){hasMenu=true;break}}
+      else{if(m.category===cat.id&&!m.combo){hasMenu=true;break}}}
+    if(!hasMenu)return;
+    idx++;
+    var selId=state.selections[cat.id];var selM=selId?allMenus[selId]:null;var isSel=!!selM;
+    var isOpen=state.openCategory===cat.id;
+    var cls='acc-header'+(isSel?' selected':'')+(isOpen?' open':'');
+    var chk=isSel?'<div class="cat-check"></div>':'';
+    var arrow='<div class="acc-arrow">→</div>';
+    var sub='';
+    if(selM&&!isOpen){var mn=LANG==='en'?selM.name_en:selM.name_jp;sub='<div class="cat-sub">'+escHtml(mn)+'</div>';}
+    html+='<div class="acc-section">';
+    html+='<div class="'+cls+'" onclick="selectCategory(\''+cat.id+'\')"><div class="acc-left"><div class="cat-no">0'+idx+'</div><div><div class="cat-name">'+cat[LANG]+'</div>'+sub+'</div></div><div class="acc-right">'+chk+arrow+'</div></div>';
+    if(isOpen){
+      html+='<div class="acc-body">';
+      if(!isComboCat&&cat.id!=='cut'&&cat.id!=='shampoo'){html+='<div class="acc-note">'+(LANG==='en'?'* Shampoo & blow dry auto-added when booked without cut':'※カットなしの場合、シャンプーブロー自動追加')+'</div>';}
+      for(var id in allMenus){var m=allMenus[id];if(m.rebookingOnly)continue;
+        if(m.addon)continue;
+        if(m.langOnly&&m.langOnly!==LANG)continue;
+        if(isComboCat){if(!m.combo)continue}else{if(m.category!==cat.id||m.combo)continue}
+        var name=LANG==='en'?m.name_en:m.name_jp;
+        var isMenuSel=!isComboCat&&(state.selections[cat.id]===id);
+        var menuCls='menu-item'+(isMenuSel?' selected':'');
+        var right=isMenuSel?'<div class="menu-check">✓</div><div class="menu-price faded">'+fmtPrice(m.price)+'</div>':'<div class="menu-price">'+fmtPrice(m.price)+'</div>';
+        var detail=fmtDur(m.duration);
+        var desc='';
+        if(m.desc_jp||m.desc_en){desc='<div class="menu-desc">'+escHtml(LANG==='en'?m.desc_en:m.desc_jp)+'</div>';}
+        html+='<div class="'+menuCls+'" onclick="selectMenu(\''+id+'\',false)"><div><div class="menu-name">'+escHtml(name)+'</div>'+desc+'<div class="menu-detail">'+detail+'</div></div><div class="acc-right">'+right+'</div></div>';
+        if(isMenuSel){
+          for(var aid in allMenus){var am=allMenus[aid];if(!am.addon||!am.showWith)continue;
+            if(am.showWith.indexOf(id)===-1)continue;
+            if(am.langOnly&&am.langOnly!==LANG)continue;
+            var aname=LANG==='en'?am.name_en:am.name_jp;
+            var isAddonSel=!!state.addons[aid];
+            var addonCls='addon-item'+(isAddonSel?' selected':'');
+            var adesc='';
+            if(am.desc_jp||am.desc_en){adesc='<div class="menu-desc">'+escHtml(LANG==='en'?am.desc_en:am.desc_jp)+'</div>';}
+            var aright=isAddonSel?'<div class="menu-check">✓</div>':'<div class="menu-price">+'+fmtPrice(am.price)+'</div>';
+            var adParts=[];
+            if(am.duration!=null&&am.duration>0)adParts.push('+'+am.duration+t('min'));
+            if(isAddonSel)adParts.push('+'+fmtPrice(am.price));
+            html+='<div class="'+addonCls+'" onclick="selectMenu(\''+aid+'\',false)"><div><div class="menu-name">+ '+escHtml(aname)+'</div>'+adesc+'<div class="menu-detail">'+adParts.join(' · ')+'</div></div><div class="acc-right">'+aright+'</div></div>';
+          }
+        }
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  grid.innerHTML=html;
+}
+function selectCategory(catId){
+  state.openCategory=state.openCategory===catId?'':catId;
+  renderCategories();
+}
+function selectMenu(menuId,isCombo){
+  var m=allMenus[menuId];if(!m)return;
+  if(isCombo){
+    state.selections={};state.addons={};state.openCategory='';state.isCombo=true;state.menuId=menuId;state.menuIds=[menuId];
+    state.totalDuration=m.duration||0;state.totalPrice=m.price||0;
+    state.priceUnknown=m.price==null;state.durUnknown=m.duration==null;
+    monthCache={};var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
+    renderCalendar(calYear,calMonth);goTo('date');
+  }else if(m.addon){
+    if(state.addons[menuId])delete state.addons[menuId];else state.addons[menuId]=true;
+    state.isCombo=false;renderCategories();updateSelectionBar();
+  }else{
+    var cat=m.category;
+    var prevSel=state.selections[cat];
+    if(prevSel===menuId){delete state.selections[cat]}
+    else{state.selections[cat]=menuId}
+    if(prevSel&&prevSel!==menuId){for(var ak in state.addons){var ad=allMenus[ak];if(ad&&ad.showWith&&ad.showWith.indexOf(prevSel)!==-1)delete state.addons[ak]}}
+    if(!state.selections[cat]){for(var ak2 in state.addons){var ad2=allMenus[ak2];if(ad2&&ad2.category===cat)delete state.addons[ak2]}}
+    state.isCombo=false;renderCategories();updateSelectionBar();
+  }
+}
+
+/* ── Calendar ── */
+function renderCalendar(year,month){
+  document.getElementById('dateTitle').textContent=t('selectDate');showLoading();
+  var ym=year+'-'+String(month).padStart(2,'0');
+  if(monthCache[ym]){buildCalendar(year,month,monthCache[ym]);hideLoading();return}
+  var p={yearMonth:ym};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
+  apiSafe('handleDays',p).then(function(r){monthCache[ym]=r.days||[];buildCalendar(year,month,r.days||[]);hideLoading()}).catch(function(){hideLoading();showError('calendar')});
+}
+function buildCalendar(year,month,days){
+  var el=document.getElementById('calendar');
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var monthLabels=LANG==='en'?['January','February','March','April','May','June','July','August','September','October','November','December']:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var now=new Date();var curY=now.getFullYear(),curM=now.getMonth()+1;
+  var canPrev=!(year===curY&&month===curM);
+  var maxDate=new Date(now.getTime()+30*86400000);var nextFirst=new Date(year,month,1);var canNext=nextFirst<=maxDate;
+  var label=LANG==='en'?monthLabels[month-1]+' '+year:year+'年'+monthLabels[month-1];
+  var h='<div class="cal-nav"><button class="cal-arrow" onclick="changeMonth(-1)"'+(canPrev?'':' disabled')+'>‹</button><span class="cal-month">'+label+'</span><button class="cal-arrow" onclick="changeMonth(1)"'+(canNext?'':' disabled')+'>›</button></div><div class="cal-grid">';
+  for(var i=0;i<7;i++){var cls='cal-hdr';if(i===0)cls+=' sun';if(i===6)cls+=' sat';h+='<div class="'+cls+'">'+dayNames[i]+'</div>'}
+  var availMap={};days.forEach(function(d){availMap[d.date]=d.slotCount});
+  var firstDay=new Date(year,month-1,1).getDay();var totalDays=new Date(year,month,0).getDate();
+  var todayStr=curY+'-'+String(curM).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  for(var i=0;i<firstDay;i++)h+='<div class="cal-cell empty"></div>';
+  for(var d=1;d<=totalDays;d++){
+    var ds=year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var avail=availMap[ds];var isToday=ds===todayStr;
+    if(avail){h+='<div class="cal-cell available'+(isToday?' today':'')+'" onclick="selectDate(\''+ds+'\')"><span class="cal-day">'+d+'</span></div>'}
+    else{h+='<div class="cal-cell disabled'+(isToday?' today':'')+'"><span class="cal-day">'+d+'</span></div>'}
+  }
+  h+='</div>';el.innerHTML=h;
+}
+function changeMonth(delta){calMonth+=delta;if(calMonth>12){calMonth=1;calYear++}if(calMonth<1){calMonth=12;calYear--}renderCalendar(calYear,calMonth)}
+function selectDate(dateStr){state.date=dateStr;renderTimeSlots(dateStr);goTo('time')}
+function renderTimeSlots(dateStr){
+  document.getElementById('timeTitle').textContent=t('selectTime');
+  var parts=dateStr.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
+  document.getElementById('selectedDateInfo').textContent=menuNamesDisplay()+' · '+dateLabel;
+  showLoading();
+  var p={date:dateStr};if(state.isCombo)p.menuId=state.menuId;else p.duration=state.totalDuration;
+  apiSafe('handleSlots',p).then(function(r){
+    hideLoading();var container=document.getElementById('timeGrid');
+    var slotsAvailable=(r.slots&&r.slots.length)||0;
+    if(slotsAvailable===0){
+      container.innerHTML='<div class="empty-state"><p>'+t('noSlots')+'</p><p>'+t('tryAnother')+'</p></div>';
+      return;
+    }
+    var h='<div class="time-grid">';r.slots.forEach(function(s){h+='<button class="time-btn" onclick="selectTime(\''+s.start+'\',\''+s.end+'\',this)">'+s.start+'</button>'});h+='</div>';container.innerHTML=h;
+  }).catch(function(){hideLoading();showError('timeGrid')});
+}
+function loadSavedUserInfo(){try{var saved=localStorage.getItem('kommons_user');if(saved){return JSON.parse(saved)}}catch(e){}return null}
+function saveUserInfo(){try{localStorage.setItem('kommons_user',JSON.stringify({name:state.name,phone:state.phone,email:state.email,gender:state.gender||''}))}catch(e){}}
+function selectTime(start,end,el){if(el){el.classList.add('flash')}setTimeout(function(){state.time=start;state.timeEnd=end;var saved=loadSavedUserInfo();var isEn=LANG==='en';if(saved&&saved.name&&saved.phone&&saved.email&&!isEn){state.name=saved.name;state.phone=saved.phone;state.email=saved.email;state.gender=saved.gender||'';state.infoSkipped=true;renderConfirmation();goTo('confirm')}else{if(saved){state.name=saved.name||'';state.phone=saved.phone||'';state.email=saved.email||'';state.gender=saved.gender||''}state.infoSkipped=false;renderInfoForm();goTo('info')}},200)}
+function renderMoodCuratorSummary(containerId){
+  var el=document.getElementById(containerId);if(!el)return;
+  var mc=MOOD_CURATOR;if(!mc||!mc.mood){el.innerHTML='';return}
+  var rows=[];
+  if(mc.mood)rows.push(['Mood',mc.mood]);
+  if(mc.length)rows.push([LANG==='en'?'Length':'希望レングス',mc.length]);
+  if(mc.cut)rows.push([LANG==='en'?'Cut':'カット',mc.cutLength?mc.cut+' — '+mc.cutLength:mc.cut]);
+  if(mc.color)rows.push([LANG==='en'?'Color':'カラー',mc.color]);
+  if(mc.perm&&mc.perm!=='None')rows.push([LANG==='en'?'Perm':'パーマ',mc.perm]);
+  if(mc.texture)rows.push([LANG==='en'?'Texture':'質感',mc.texture]);
+  if(mc.damage)rows.push([LANG==='en'?'Damage Level':'ダメージ',mc.damage]);
+  if(mc.eyebrow==='true')rows.push([LANG==='en'?'Eyebrow Cut':'眉カット',LANG==='en'?'Yes':'あり']);
+  if(mc.spa&&mc.spa!=='none')rows.push([LANG==='en'?'Head Spa':'ヘッドスパ',mc.spa]);
+  if(mc.scalp&&mc.scalp!=='none')rows.push([LANG==='en'?'Scalp Concern':'頭皮',mc.scalp]);
+  if(mc.signatureCode)rows.push(['Signature Code',mc.signatureCode]);
+  if(rows.length===0){el.innerHTML='';return}
+  var h='<div style="border-left:2px solid var(--accent);padding:10px 16px;margin:14px 0 20px">';
+  h+='<p style="font-size:11.5px;font-weight:600;color:var(--accent);margin-bottom:6px">Mood Curator</p>';
+  rows.forEach(function(r){h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12px;color:var(--ink2)">'+r[0]+'</span><span style="font-size:13px;color:var(--ink)">'+r[1]+'</span></div>'});
+  h+='</div>';el.innerHTML=h;
+}
+function renderInfoForm(){
+  document.getElementById('infoTitle').textContent=t('yourInfo');
+  document.getElementById('nameLabel').textContent=t('name');
+  document.getElementById('phoneLabel').textContent=t('phone');
+  document.getElementById('emailLabel').textContent=t('email');
+  document.getElementById('notesLabel').textContent=t('notes');
+  document.getElementById('genderLabel').textContent=t('gender');
+  var gSel=document.getElementById('genderInput');
+  gSel.options[0].text=t('genderPlaceholder');
+  gSel.options[1].text=t('genderMale');
+  gSel.options[2].text=t('genderFemale');
+  gSel.options[3].text=t('genderOther');
+  document.getElementById('nameInput').placeholder=t('namePh');
+  document.getElementById('phoneInput').placeholder=t('phonePh');
+  document.getElementById('emailInput').placeholder=t('emailPh');
+  document.getElementById('notesInput').placeholder=t('notesPh');
+  document.getElementById('phoneError').textContent=t('phoneErr');
+  document.getElementById('infoBtn').textContent=t('next');
+  document.getElementById('nameInput').value=state.name;
+  document.getElementById('phoneInput').value=state.phone;
+  document.getElementById('emailInput').value=state.email;
+  document.getElementById('genderInput').value=state.gender||'';
+  var isEn=LANG==='en';
+  var phoneInput=document.getElementById('phoneInput');
+  var phoneReq=document.getElementById('phoneReq');
+  if(isEn){phoneReq.style.display='none';phoneInput.removeAttribute('required');}
+  else{phoneReq.style.display='';phoneInput.setAttribute('required','required');}
+  var resGroup=document.getElementById('residencyGroup');
+  if(isEn){
+    resGroup.style.display='';
+    document.getElementById('residencyLabel').textContent=t('residency');
+    document.getElementById('residentBtn').textContent=t('residencyResident');
+    document.getElementById('visitingBtn').textContent=t('residencyVisiting');
+    document.getElementById('residencyError').textContent=t('residencyErr');
+    document.getElementById('residencyError').classList.remove('show');
+    document.getElementById('residentBtn').classList.toggle('selected',state.residency==='resident');
+    document.getElementById('visitingBtn').classList.toggle('selected',state.residency==='visiting');
+  }else{
+    resGroup.style.display='none';
+  }
+  if(!state.notes&&MOOD_CURATOR.signatureCode){
+    state.notes='[Signature Code] '+MOOD_CURATOR.signatureCode;
+  }
+  document.getElementById('notesInput').value=state.notes;
+  renderMoodCuratorSummary('infoMoodSummary');
+}
+function selectResidency(v){
+  state.residency=v;
+  document.getElementById('residentBtn').classList.toggle('selected',v==='resident');
+  document.getElementById('visitingBtn').classList.toggle('selected',v==='visiting');
+  document.getElementById('residencyError').classList.remove('show');
+}
+function submitInfo(e){
+  e.preventDefault();
+  var name=document.getElementById('nameInput').value.trim();
+  var phone=document.getElementById('phoneInput').value.trim().replace(/[-\s　]/g,'');
+  var email=document.getElementById('emailInput').value.trim();
+  var notes=document.getElementById('notesInput').value.trim().replace(/[<>]/g,'').substring(0,500);
+  var gender=document.getElementById('genderInput').value;
+  var isEn=LANG==='en';
+  var phoneRequired=!isEn;
+  if(phoneRequired||phone){
+    if(!/^[+]?\d{7,15}$/.test(phone)){document.getElementById('phoneError').classList.add('show');document.getElementById('phoneInput').focus();return}
+  }
+  document.getElementById('phoneError').classList.remove('show');
+  if(isEn&&!state.residency){
+    var resErr=document.getElementById('residencyError');
+    resErr.classList.add('show');
+    resErr.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  state.name=name;state.phone=phone;state.email=email;state.notes=notes;state.gender=gender;renderConfirmation();goTo('confirm');
+}
+function renderConfirmation(){
+  document.getElementById('confirmTitle').textContent=t('confirmBooking');
+  document.getElementById('bookBtn').textContent=t('bookNow');
+  var names=menuNamesDisplay();
+  var parts=state.date.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2])+'/'+parts[0]:parts[0]+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日('+dayNames[d.getDay()]+')';
+  var card=document.getElementById('confirmCard');
+  var editLink='<div style="text-align:right;margin-top:6px"><a href="#" onclick="state.infoSkipped=false;renderInfoForm();goTo(\'info\');return false" style="font-size:12px;color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px">'+(LANG==='en'?'Edit info ✎':'情報を編集 ✎')+'</a></div>';
+  var durStr=state.durUnknown?'[ ]'+t('min'):state.totalDuration+t('min');
+  var priceStr=state.priceUnknown?t('yen')+'[ ]':t('yen')+state.totalPrice.toLocaleString();
+  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'〜'+state.timeEnd)+cRow(t('duration'),durStr)+cRow(t('price'),priceStr)+'<div style="border-top:1px solid var(--ink);margin:8px 0"></div>'+cRow(t('name'),state.name)+cRow(t('phone'),state.phone)+cRow(t('email'),state.email)+(state.notes?cRow(t('notes'),state.notes):'')+editLink;
+  renderMoodCuratorSummary('confirmMoodSummary');
+}
+function submitBooking(){
+  /* mock: no real booking is created */
+  var btn=document.getElementById('bookBtn');btn.disabled=true;showLoading();
+  setTimeout(function(){
+    hideLoading();btn.disabled=false;
+    saveUserInfo();renderDone();goTo('done');
+  },650);
+}
+function generateICS(){
+  var parts=state.date.split('-');
+  var timeParts=state.time.split(':');var endParts=state.timeEnd.split(':');
+  var dtStart=parts[0]+parts[1]+parts[2]+'T'+timeParts[0]+(timeParts[1]||'00')+'00';
+  var dtEnd=parts[0]+parts[1]+parts[2]+'T'+endParts[0]+(endParts[1]||'00')+'00';
+  var names=menuNamesDisplay();
+  var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//kommons//booking//EN','BEGIN:VEVENT',
+    'DTSTART;TZID=Asia/Tokyo:'+dtStart,'DTEND;TZID=Asia/Tokyo:'+dtEnd,
+    'SUMMARY:'+names+' — HIKARU TERADA',
+    'LOCATION:東京都杉並区高円寺南4-9-8 GRANDSTATUS栗原 2F Mirror A',
+    'DESCRIPTION:'+(state.priceUnknown?t('yen')+'[ ]':t('yen')+state.totalPrice.toLocaleString()),
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
+  var blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='kommons-booking.ics';a.click();
+  URL.revokeObjectURL(url);
+}
+function renderDone(){
+  document.getElementById('doneTitle').textContent=t('booked');
+  document.getElementById('doneMsg').textContent=t('bookedMsg');
+  document.getElementById('mapLink').textContent=t('mapText');
+  var names=menuNamesDisplay();
+  var parts=state.date.split('-');var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var dayNames=[t('sun'),t('mon'),t('tue'),t('wed'),t('thu'),t('fri'),t('sat')];
+  var dateLabel=LANG==='en'?dayNames[d.getDay()]+', '+parseInt(parts[1])+'/'+parseInt(parts[2]):parseInt(parts[1])+'/'+parseInt(parts[2])+'('+dayNames[d.getDay()]+')';
+  var card=document.getElementById('doneCard');
+  var calBtnLabel=LANG==='en'?'Add to Calendar':'カレンダーに追加';
+  var priceStr=state.priceUnknown?t('yen')+'[ ]':t('yen')+state.totalPrice.toLocaleString();
+  card.innerHTML=cRow(t('menu'),names)+cRow(t('dateTime'),dateLabel+' '+state.time+'〜'+state.timeEnd)+cRow(t('price'),priceStr)+'<div style="font-size:13px;color:var(--ink2);padding:10px 0 2px">'+t('address')+'</div>';
+  var old=document.getElementById('calBtnWrap');if(old)old.remove();
+  card.insertAdjacentHTML('afterend','<div id="calBtnWrap"><button class="cal-download" onclick="generateICS()">📅 '+calBtnLabel+'</button></div>');
+}
+function showError(cid){
+  var el=document.getElementById(cid);
+  el.innerHTML='<div class="error-msg"><p>'+t('error')+'</p><button class="retry-btn" onclick="retryFromError(\''+cid+'\')">↻ Retry</button></div>';
+}
+function retryFromError(cid){
+  if(cid==='catGrid'){init(false)}
+  else if(cid==='calendar'){renderCalendar(calYear,calMonth)}
+  else if(cid==='timeGrid'){renderTimeSlots(state.date)}
+  else{location.reload()}
+}
+function init(isLangSwitch){
+  document.getElementById('langBtn').textContent=LANG==='en'?'日本語':'EN';
+  showLoading();
+  apiSafe('handleMenus',{lang:LANG}).then(function(r){
+    hideLoading();allMenus=r.menus||{};
+    for(var cat in state.selections){if(!allMenus[state.selections[cat]])delete state.selections[cat]}
+    if(INITIAL_MENU_ID&&allMenus[INITIAL_MENU_ID]){
+      var m=allMenus[INITIAL_MENU_ID];state.isCombo=true;state.menuId=INITIAL_MENU_ID;
+      state.menuIds=[INITIAL_MENU_ID];state.totalDuration=m.duration||0;state.totalPrice=m.price||0;
+      state.priceUnknown=m.price==null;state.durUnknown=m.duration==null;
+      if(MOOD_CURATOR.addons){
+        var addonIds=MOOD_CURATOR.addons.split(',').filter(function(id){return id&&allMenus[id]&&id!==INITIAL_MENU_ID;});
+        if(addonIds.length){
+          state.isCombo=false;
+          addonIds.forEach(function(aid){
+            state.menuIds.push(aid);state.addons[aid]=true;
+            state.totalDuration+=allMenus[aid].duration||0;state.totalPrice+=allMenus[aid].price||0;
+          });
+        }
+      }
+      document.getElementById('dateBack').style.display='none';
+      var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth()+1;
+      renderCalendar(calYear,calMonth);goTo('date');
+    }else{INITIAL_MENU_ID='';renderCategories();goTo('category')}
+  }).catch(function(){hideLoading();showError('catGrid');goTo('category')});
+}
+
+/* ── Signature Finder kinetic typography ── */
+var EN_MOODS=['Fluid','Curved','Refined','Linear','Strong','Textured','Avant-garde','Contrast','Intent','Inorganic','Urban','Silence','Quality','Intellect','Polish','Universal','Gloss','Au naturel','Airiness','Simplicity'];
+var JA_ESSENCE=['情熱','活力','自信','調和','成長','誠実','信頼','直感','深み','優しさ','温もり','安定','純粋','本質','柔らかさ','穏やか','軽やかさ','清潔感','自由','夢想','想像','内省','安らぎ','意志','躍動','輝き','鮮烈','前進','革新','誇り','個性','大胆','強さ','静寂','洗練','品'];
+var TECHNIQUES=['Balayage','Ombré','Peekaboo','Highlight','High Tone','Ash','Signature Color'];
+var PHRASES=['Hair is your signature','MOOD ESSENCE','SIGNATURE CODE'];
+function buildSigRows(){
+  var SEP=' ';
+  var bJa=['静寂','躍動','洗練','鮮烈','個性','品','革新','大胆'];
+  var bEn=EN_MOODS.slice(10,18);
+  var b=[];for(var i=0;i<bJa.length;i++){b.push(bJa[i]);if(bEn[i])b.push(bEn[i])}
+  var cWords=JA_ESSENCE.filter(function(w){return bJa.indexOf(w)===-1});
+  var rows=[
+    {id:'sigTrackA',words:EN_MOODS.slice(0,10),sep:SEP,dur:95},
+    {id:'sigTrackB',words:b,sep:SEP,dur:70},
+    {id:'sigTrackC',words:cWords,sep:SEP,dur:60},
+    {id:'sigTrackD',words:TECHNIQUES.concat(PHRASES),sep:' / ',dur:42}
+  ];
+  rows.forEach(function(r){
+    var el=document.getElementById(r.id);if(!el)return;
+    var half=r.words.join(r.sep);
+    el.style.animationDuration=r.dur+'s';
+    el.innerHTML='<span>'+half+'</span><span aria-hidden="true">'+half+'</span>';
+  });
+}
+function initSigScroll(){
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var band=document.getElementById('sigFinder');if(!band)return;
+  var rowEls=band.querySelectorAll('.sig-row');
+  var ks=[-90,140,-190,70];
+  var active=false;
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(entries){entries.forEach(function(e){active=e.isIntersecting})},{rootMargin:'100px'}).observe(band);
+  }else{active=true}
+  function loop(){
+    if(active&&state.step==='category'){
+      var r=band.getBoundingClientRect();
+      var p=(window.innerHeight/2-(r.top+r.height/2))/window.innerHeight;
+      for(var i=0;i<rowEls.length;i++){
+        rowEls[i].style.transform='translate3d('+(p*ks[i]).toFixed(1)+'px,0,0)';
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+
+function startApp() {
+  if (LANG_FROM_URL || INITIAL_MENU_ID) {
+    if (!LANG) LANG = 'ja';
+  } else {
+    LANG = detectBrowserLang();
+  }
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'ja';
+  document.getElementById('langBtn').textContent = LANG === 'en' ? '日本語' : 'EN';
+  buildSigRows();
+  initSigScroll();
+  init(false);
+}
+startApp();
+</script>
+</body>
+</html>
